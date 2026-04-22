@@ -4,8 +4,8 @@ image: media/herpor.jpg
 toc: false
 about:
   template: jolla
-  image-shape: round
-  image-width: 17em
+  image-shape: rounded
+  image-width: 12em
 ---
 
 I am a Biology and Data Science student at St. Olaf College.
