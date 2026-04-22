@@ -5,7 +5,7 @@ toc: false
 about:
   template: jolla
   image-shape: rounded
-  image-width: 12em
+  image-width: 17em
 ---
 
 I am a Biology and Data Science student at St. Olaf College.
