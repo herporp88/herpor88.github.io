@@ -1,11 +1,3 @@
 ---
 title: "All my favorite resources!"
-
-website:
-  navbar:
-    left:
-      - href: index.qmd
-        text: Home
-      - about.qmd
-      - resources.qmd
 ---
