@@ -4,7 +4,7 @@ image: docs/media/herpor.jpg
 toc: false
 about:
   template: jolla
-  image-shape: rounded
+  image-shape: round
   image-width: 17em
 ---
 
