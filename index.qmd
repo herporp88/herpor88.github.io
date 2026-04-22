@@ -1,6 +1,6 @@
 ---
 title: "Herpor's Website"
-image: media/herpor.jpg
+image: docs/media/herpor.jpg
 toc: false
 about:
   template: jolla
