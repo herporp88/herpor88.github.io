@@ -1,6 +1,11 @@
 ---
 title: "Herpor's Website"
 image: media/Herpor.jpg
+toc: false
+about:
+  template: jolla
+  image-shape: round
+  image-width: 17em
 ---
 
 I am a Biology and Data Science student at St. Olaf College.
