@@ -1,7 +1,6 @@
 ---
-title: "herpor88.github.io"
+title: "Herpor's Website"
 ---
 
-This is a Quarto website.
-
-To learn more about Quarto websites visit <https://quarto.org/docs/websites>.
+I am a Biology and Data Science student at St. Olaf College.
+This site will showcase my projects and work.
