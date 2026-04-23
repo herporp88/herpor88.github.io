@@ -1,16 +1,16 @@
 [
   {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "Herpor’s Website",
-    "section": "",
-    "text": "I am a Biology and Data Science student at St. Olaf College.\nThis site will showcase my projects and work."
-  },
-  {
     "objectID": "about.html",
     "href": "about.html",
     "title": "About",
     "section": "",
     "text": "About this site\n\n1 + 1\n\n[1] 2"
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Herpor’s Website",
+    "section": "",
+    "text": "I am a Biology and Data Science student at St. Olaf College.\nThis site will showcase my projects and work."
   }
 ]
