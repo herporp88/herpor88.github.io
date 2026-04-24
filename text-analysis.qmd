@@ -1,3 +1,264 @@
 ---
-title: "Text Analysis"
+title: "Text Analysis Project"
 ---
+
+```{r}
+#| include: false
+library(tidyverse)
+library(tidytext)
+library(textdata)
+library(wordcloud)
+library(wordcloud2)
+library(viridis)
+library(ggthemes)
+library(gutenbergr)
+library(tidytext)
+library(igraph)
+library(ggraph)
+library(ggplot2)
+```
+
+#### Load the dataset
+
+```{r}
+#| include: false
+
+article_dat <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2025/2025-02-25/article_dat.csv')
+
+#I want only three columns
+academic_Literature <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2025/2025-02-25/article_dat.csv') |> 
+  select("title", "abstract", "keywords")
+
+```
+
+#### My plan is that I want to do sentiment analysis using the title and abstract.
+
+```{r echo = FALSE}
+#I want to remove some symbols from my data from the title variable.  
+filter1 <- academic_Literature |>
+  mutate(newtitle = gsub("\\[.*?\\]|[;:0-9/()]", "", title)) |> 
+  filter(title != " ") |> #remove empty rows or space
+  mutate(new_keyword = gsub("\\[.*?\\]|[;:0-9/()]", "", keywords)) |>
+  filter(keywords != " ")
+view(filter1)
+```
+
+#### Before I tokenize the newtitle, I want to check the number of words and characters in each title.
+
+```{r}
+filter1 |> 
+  mutate(word_count = lengths(str_split(newtitle, " "))) |>
+  arrange(desc(word_count)) |>
+  slice_head(n = 5)
+```
+
+The highest number of words in a title is 27 words
+
+#### Let's check the number of characters for the 3 top longest newtitle with the longest title.
+
+```{r echo = FALSE}
+filter1 |>
+  mutate(char_count = str_length(str_remove_all(newtitle, " "))) |>
+  arrange(desc(char_count)) |>
+  slice_head(n = 3)
+```
+
+The highest number of characters in a title is 171 characters.
+
+#### Now, let's tokenize the newtitle that I have cleaned up.
+
+```{r}
+new_data1 <- filter1 |>
+  mutate(line = row_number()) |> #assigns index or number to each by starting from 1. 
+  unnest_tokens(word, newtitle, token = "words") 
+print(new_data1)
+```
+
+#### I also tokenized the keywords variable so that I can use it later.
+
+```{r}
+new_data2 <- filter1 |>
+  mutate(line = row_number()) |> #assigns index or number to each by starting from 1. 
+  unnest_tokens(word, new_keyword, token = "words")
+print(new_data2)
+```
+
+#### After tokenizing the newtitle, the total rows I have are more 4 thounsands, so next I want to remove some of the stop_words.
+
+```{r echo = FALSE}
+ #GET STOPWORDS DIFFERENT SOURCES
+snowball <- get_stopwords(source = "snowball")
+smart_stopwords <- get_stopwords(source = "smart")
+nltkstop <- get_stopwords(source = "nltk")
+
+#Now let's match the stop_words, and then remove 
+new_data3 <- new_data1 |>
+  anti_join(smart_stopwords) |> #ANTI_JOIN WILL RETURN ONLY THE ROWS IN new_data THAT DO NOT HAVE A MATCH IN smart_stopwords.
+  count(word, sort = TRUE) |> 
+  filter(word != "NA") |> #REMOVE NA FROM THE WORD COLUMN
+  slice_max(n, n = 30) #I want only the top 30 words are most common. 
+
+#Let's see how it looks like in a graph
+new_data3 |>
+  ggplot(aes(fct_reorder(word, n), n)) +
+  geom_col(fill = "steelblue") +
+  coord_flip() +
+  labs(title = "Most Frequent Words in Literature Dataset",
+    x = "Words",
+    y = "Frequency") + 
+  theme_minimal()
+```
+
+*This is a horizontal bar chart showing the frequency of each word, where the longest bar represent the most common word, and the shortest bar represents most least common word. On the y-axis is words, containing 32 words, while on the x-axis the frequency of each word, ranging from 1 time to approximately 130 times. Overall, the distribution of this bar chart shows a significant emphasis on oncology and healthcare disparities.*
+
+#### Next let's explore different sentiment lexicons
+
+```{r}
+#| include: false
+#Let's get the sentiment lexicon
+afin1_sentiment <- get_sentiments(lexicon = "afinn")
+nrc1_sentiment <- get_sentiments(lexicon = "nrc")
+bing1_sentiment <- get_sentiments(lexicon = "bing")
+```
+
+#### Implement sentiment analysis with the BING and titles
+
+```{r echo = FALSE}
+
+#I want to keep only words that have a match with the bing sentiment lexicons. 
+new_data3 |>
+  inner_join(bing1_sentiment)
+
+#Let's check if the title is more positive or negative
+new_data3 |>
+  inner_join(bing1_sentiment) |>
+  group_by(sentiment) %>%          # group by positive/negative
+  summarise(avg_n = mean(n))       # calculate average count per sentiment
+
+#What words contribute the most to sentiment scores for these titles? 
+new_data3 |>
+  inner_join(bing1_sentiment) |>
+  count(sentiment, word, sort = TRUE) |>
+  group_by(sentiment) |>
+  slice_max(n, n = 10) |>
+  ungroup() |>
+  ggplot(aes(x = fct_reorder(word, n), y = n, fill = sentiment)) +
+    geom_col() +
+    coord_flip() +
+    facet_wrap(~ sentiment, scales = "free") +
+  labs(title = "Word Frequencies by Sentiment in Academic Literature",
+    x = "Words",
+    y = "Frequency") + 
+  theme_minimal()
+```
+
+*This faceted horizontal bar chart illustrates word frequencies categorized by sentiment in academic literature. Words associated with negative sentiment, including, cancer, risk, severe, appear in the left panel, while words associated with positive sentiment, survival, appear in the right panel. Bar lengths indicate relative word frequencies. The word that contributes the most to the sentiment scores for these titles is survival. All three terms—risk, cancer, and survival—show a maximum relative frequency of* $1.00$ within their respective sentiment categories.
+
+#### Second, let's check word frequency using wordcloud.
+
+```{r wordcloud, warning=FALSE, echo = FALSE}
+
+# wordcloud wants a column with words and another column with counts
+w11 <- new_data3 |>
+  anti_join(stop_words) |>
+  count(word) |>
+  filter(!is.na(word)) |>
+  arrange(desc(n))
+
+wordcloud(words = w11$word,
+          freq = w11$n,
+          max.words = 100,
+          random.order = FALSE)
+```
+
+*This word cloud visualizes the most frequently occurring terms in the literature dataset. The size of each word represents its frequency, making the most dominant themes immediately apparent. The largest words—including analysis, birth, black, cancer, and, risk, indicate that these are the most prominent terms in the text. Words are arranged in both horizontal and vertical orientations to create a compact thematic summary.*
+
+#### Let's do some N-gram analysis
+
+```{r echo = FALSE}
+LiteratureNgram <- academic_Literature |> 
+  group_by(abstract) |> 
+  mutate(linenumber = row_number()) |>
+  ungroup() |>
+  unnest_tokens(bigram,  abstract, token = "ngrams", n = 2) |> 
+  filter(bigram != "NA")
+  
+LiteratureNgram
+```
+
+#### Check the most common bigram
+
+```{r echo = FALSE}
+
+LiteratureNgram |> 
+  count(bigram, sort = TRUE)
+```
+
+The bigram “95 ci” occurs in a total of 502 titles.
+
+#### LET'S REMOVE SOME OF THE STOP WORDS FROM THE BIGRAM COLUMN
+
+```{r echo = FALSE}
+bigrams_filter1 <- LiteratureNgram |>
+  separate(bigram, c("firstword", "secondword"), sep = " ") |>
+  filter(!firstword %in% stop_words$word,
+         !secondword %in% stop_words$word) |>
+  filter(!is.na(firstword) & !is.na(secondword))
+bigrams_filter1
+
+#After removing some of the stop-words, I reunited both columns of the bigram to be one column. 
+bigrams_filter2 <- bigrams_filter1 |>
+  unite(bigram, firstword, secondword, sep = " ")
+
+#I want to remove all the digits from the bigram column before calculating the tf score. 
+bigrams_filter3 <- bigrams_filter2 |>
+  mutate(bigram = gsub("[0-9,.]", "", bigram)) |> #remove all the digits from the bigram
+  filter(bigram != " ") |> #remove the empty columns
+  mutate(title = gsub("[0-9,.]", "", title)) |> #remove all the digits from the title
+  filter(title != " ") |> #remove the empty columns
+  mutate(word_count = str_count(title, "\\S+")) |> #count how many words per each title
+  arrange(desc(word_count)) #arrange from highest word_count to the lowest word_count
+
+#Here I want to know how many titles contain only 5 words, 10 words, or 20 words. 
+bigrams_filter4 <- bigrams_filter3 |>
+  count(word_count)
+
+#I want to keep only one title from each type of title because there are many titles are the same.
+bigrams_filter5 <- bigrams_filter3 |>
+  distinct(title, .keep_all = TRUE) |>
+  mutate(word_in_title = str_count(title, "\\S+")) #count how many words per each title
+
+```
+
+#### CREATING A NETWORK GRAPH FROM THE N-GRAM
+
+```{r echo = FALSE}
+
+bigrams_filter6 <- LiteratureNgram |> #LiteratureNgram contains bigram tokenized words
+  separate(bigram, c("firstword", "secondword"), sep = " ") |> #separate the bigram column
+  filter(!firstword %in% stop_words$word, #remove all the stop-words from the bigram column 
+         !secondword %in% stop_words$word) |> #remove all the stop-words from the bigram column 
+  filter(!is.na(firstword) & !is.na(secondword)) |> #remove all the missing words 
+  count(firstword, secondword, sort = TRUE) |> #count how many times each pair, one in the firstword column, the other from the secondword column. 
+  slice_head(n = 200) #keep only 200 rows 
+
+#CREATE GRAPH 
+bigram_graph8 <- bigrams_filter6 |>
+  filter(n > 1) |>
+  graph_from_data_frame() #Converts the data frame into a network graph object
+
+#Makes the graph layout reproducible and creates an arrow style for network edges. 
+set.seed(2020)
+a <- grid::arrow(type = "closed", length = unit(.15, "inches"))
+
+ggraph(bigram_graph8, layout = "fr") +
+  geom_edge_link(aes(edge_alpha = n), show.legend = FALSE,
+                 arrow = a, end_cap = circle(.07, 'inches')) +
+  geom_node_point(color = "green", size = 5) +
+  geom_node_text(aes(label = name), vjust = 1, hjust = 1) +
+  labs(title = "Network of Common Word Pairs (Bigrams)",
+    subtitle = "Connections between words appearing together in the text") +
+  theme_void()
+```
+
+*This is a directed network graph illustrating common word pairs (bigrams) within the dataset. Each green node represents a unique word, while the arrows indicate the sequence and directional relationship of phrases appearing together in the text. The density of the arrows reveals thematic clusters, most notably a central focus on racial and ethnic disparities and a secondary cluster focused on maternal health and obstetric outcomes. Larger connections represent more frequent word pairings.*

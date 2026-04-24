@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Text Analysis – Herpor’s Website</title>
+<title>Text Analysis Project – Herpor’s Website</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -22,6 +22,41 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -71,6 +106,35 @@ ul.task-list li input[type="checkbox"] {
   }
 }</script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 <link rel="stylesheet" href="styles.css">
 </head>
@@ -98,7 +162,7 @@ ul.task-list li input[type="checkbox"] {
   </li>  
   <li class="nav-item">
     <a class="nav-link active" href="./text-analysis.html" aria-current="page"> 
-<span class="menu-text">Text Analysis</span></a>
+<span class="menu-text">Text Analysis Project</span></a>
   </li>  
   <li class="nav-item">
     <a class="nav-link" href="./maps.html"> 
@@ -123,7 +187,7 @@ ul.task-list li input[type="checkbox"] {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Text Analysis</h1>
+<h1 class="title">Text Analysis Project</h1>
 </div>
 
 
@@ -140,8 +204,247 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
+<section id="load-the-dataset" class="level4">
+<h4 class="anchored" data-anchor-id="load-the-dataset">Load the dataset</h4>
+</section>
+<section id="my-plan-is-that-i-want-to-do-sentiment-analysis-using-the-title-and-abstract." class="level4">
+<h4 class="anchored" data-anchor-id="my-plan-is-that-i-want-to-do-sentiment-analysis-using-the-title-and-abstract.">My plan is that I want to do sentiment analysis using the title and abstract.</h4>
+</section>
+<section id="before-i-tokenize-the-newtitle-i-want-to-check-the-number-of-words-and-characters-in-each-title." class="level4">
+<h4 class="anchored" data-anchor-id="before-i-tokenize-the-newtitle-i-want-to-check-the-number-of-words-and-characters-in-each-title.">Before I tokenize the newtitle, I want to check the number of words and characters in each title.</h4>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>filter1 <span class="sc">|&gt;</span> </span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">word_count =</span> <span class="fu">lengths</span>(<span class="fu">str_split</span>(newtitle, <span class="st">" "</span>))) <span class="sc">|&gt;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(word_count)) <span class="sc">|&gt;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_head</span>(<span class="at">n =</span> <span class="dv">5</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 5 × 6
+  title                        abstract keywords newtitle new_keyword word_count
+  &lt;chr&gt;                        &lt;chr&gt;    &lt;chr&gt;    &lt;chr&gt;    &lt;chr&gt;            &lt;int&gt;
+1 A single baseline ultrasoun… How wel… disease… A singl… disease pr…         27
+2 Impact of racial disparitie… We asse… Gynecol… Impact … Gynecologi…         27
+3 Trends of racial disparitie… To dete… African… Trends … African Co…         26
+4 Disparities in cervical can… During … Cancer … Dispari… Cancer sta…         26
+5 Black race associated with … To eval… Frozen … Black r… Frozen emb…         26</code></pre>
+</div>
+</div>
+<p>The highest number of words in a title is 27 words</p>
+</section>
+<section id="lets-check-the-number-of-characters-for-the-3-top-longest-newtitle-with-the-longest-title." class="level4">
+<h4 class="anchored" data-anchor-id="lets-check-the-number-of-characters-for-the-3-top-longest-newtitle-with-the-longest-title.">Let’s check the number of characters for the 3 top longest newtitle with the longest title.</h4>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 6
+  title                        abstract keywords newtitle new_keyword char_count
+  &lt;chr&gt;                        &lt;chr&gt;    &lt;chr&gt;    &lt;chr&gt;    &lt;chr&gt;            &lt;int&gt;
+1 Black race associated with … To eval… Frozen … Black r… Frozen emb…        171
+2 Systematic Next Generation … Both in… African… Systema… African Am…        165
+3 A single baseline ultrasoun… How wel… disease… A singl… disease pr…        163</code></pre>
+</div>
+</div>
+<p>The highest number of characters in a title is 171 characters.</p>
+</section>
+<section id="now-lets-tokenize-the-newtitle-that-i-have-cleaned-up." class="level4">
+<h4 class="anchored" data-anchor-id="now-lets-tokenize-the-newtitle-that-i-have-cleaned-up.">Now, let’s tokenize the newtitle that I have cleaned up.</h4>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>new_data1 <span class="ot">&lt;-</span> filter1 <span class="sc">|&gt;</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">line =</span> <span class="fu">row_number</span>()) <span class="sc">|&gt;</span> <span class="co">#assigns index or number to each by starting from 1. </span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unnest_tokens</span>(word, newtitle, <span class="at">token =</span> <span class="st">"words"</span>) </span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(new_data1)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 4,318 × 6
+   title                               abstract keywords new_keyword  line word 
+   &lt;chr&gt;                               &lt;chr&gt;    &lt;chr&gt;    &lt;chr&gt;       &lt;int&gt; &lt;chr&gt;
+ 1 Desired Sterilization Procedure at… To eval… Adult; … Adult Cesa…     1 desi…
+ 2 Desired Sterilization Procedure at… To eval… Adult; … Adult Cesa…     1 ster…
+ 3 Desired Sterilization Procedure at… To eval… Adult; … Adult Cesa…     1 proc…
+ 4 Desired Sterilization Procedure at… To eval… Adult; … Adult Cesa…     1 at   
+ 5 Desired Sterilization Procedure at… To eval… Adult; … Adult Cesa…     1 the  
+ 6 Desired Sterilization Procedure at… To eval… Adult; … Adult Cesa…     1 time 
+ 7 Desired Sterilization Procedure at… To eval… Adult; … Adult Cesa…     1 of   
+ 8 Desired Sterilization Procedure at… To eval… Adult; … Adult Cesa…     1 cesa…
+ 9 Desired Sterilization Procedure at… To eval… Adult; … Adult Cesa…     1 deli…
+10 Desired Sterilization Procedure at… To eval… Adult; … Adult Cesa…     1 acco…
+# ℹ 4,308 more rows</code></pre>
+</div>
+</div>
+</section>
+<section id="i-also-tokenized-the-keywords-variable-so-that-i-can-use-it-later." class="level4">
+<h4 class="anchored" data-anchor-id="i-also-tokenized-the-keywords-variable-so-that-i-can-use-it-later.">I also tokenized the keywords variable so that I can use it later.</h4>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>new_data2 <span class="ot">&lt;-</span> filter1 <span class="sc">|&gt;</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">line =</span> <span class="fu">row_number</span>()) <span class="sc">|&gt;</span> <span class="co">#assigns index or number to each by starting from 1. </span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unnest_tokens</span>(word, new_keyword, <span class="at">token =</span> <span class="st">"words"</span>)</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(new_data2)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 10,595 × 6
+   title                                  abstract keywords newtitle  line word 
+   &lt;chr&gt;                                  &lt;chr&gt;    &lt;chr&gt;    &lt;chr&gt;    &lt;int&gt; &lt;chr&gt;
+ 1 Desired Sterilization Procedure at th… To eval… Adult; … Desired…     1 adult
+ 2 Desired Sterilization Procedure at th… To eval… Adult; … Desired…     1 cesa…
+ 3 Desired Sterilization Procedure at th… To eval… Adult; … Desired…     1 sect…
+ 4 Desired Sterilization Procedure at th… To eval… Adult; … Desired…     1 coho…
+ 5 Desired Sterilization Procedure at th… To eval… Adult; … Desired…     1 stud…
+ 6 Desired Sterilization Procedure at th… To eval… Adult; … Desired…     1 fema…
+ 7 Desired Sterilization Procedure at th… To eval… Adult; … Desired…     1 heal…
+ 8 Desired Sterilization Procedure at th… To eval… Adult; … Desired…     1 disp…
+ 9 Desired Sterilization Procedure at th… To eval… Adult; … Desired…     1 huma…
+10 Desired Sterilization Procedure at th… To eval… Adult; … Desired…     1 insu…
+# ℹ 10,585 more rows</code></pre>
+</div>
+</div>
+</section>
+<section id="after-tokenizing-the-newtitle-the-total-rows-i-have-are-more-4-thounsands-so-next-i-want-to-remove-some-of-the-stop_words." class="level4">
+<h4 class="anchored" data-anchor-id="after-tokenizing-the-newtitle-the-total-rows-i-have-are-more-4-thounsands-so-next-i-want-to-remove-some-of-the-stop_words.">After tokenizing the newtitle, the total rows I have are more 4 thounsands, so next I want to remove some of the stop_words.</h4>
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>Joining with `by = join_by(word)`</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="text-analysis_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p><em>This is a horizontal bar chart showing the frequency of each word, where the longest bar represent the most common word, and the shortest bar represents most least common word. On the y-axis is words, containing 32 words, while on the x-axis the frequency of each word, ranging from 1 time to approximately 130 times. Overall, the distribution of this bar chart shows a significant emphasis on oncology and healthcare disparities.</em></p>
+</section>
+<section id="next-lets-explore-different-sentiment-lexicons" class="level4">
+<h4 class="anchored" data-anchor-id="next-lets-explore-different-sentiment-lexicons">Next let’s explore different sentiment lexicons</h4>
+</section>
+<section id="implement-sentiment-analysis-with-the-bing-and-titles" class="level4">
+<h4 class="anchored" data-anchor-id="implement-sentiment-analysis-with-the-bing-and-titles">Implement sentiment analysis with the BING and titles</h4>
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>Joining with `by = join_by(word)`</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 3 × 3
+  word         n sentiment
+  &lt;chr&gt;    &lt;int&gt; &lt;chr&gt;    
+1 cancer     127 negative 
+2 survival    36 positive 
+3 risk        27 negative </code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Joining with `by = join_by(word)`</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 2 × 2
+  sentiment avg_n
+  &lt;chr&gt;     &lt;dbl&gt;
+1 negative     77
+2 positive     36</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Joining with `by = join_by(word)`</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="text-analysis_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p><em>This faceted horizontal bar chart illustrates word frequencies categorized by sentiment in academic literature. Words associated with negative sentiment, including, cancer, risk, severe, appear in the left panel, while words associated with positive sentiment, survival, appear in the right panel. Bar lengths indicate relative word frequencies. The word that contributes the most to the sentiment scores for these titles is survival. All three terms—risk, cancer, and survival—show a maximum relative frequency of</em> <span class="math inline">\(1.00\)</span> within their respective sentiment categories.</p>
+</section>
+<section id="second-lets-check-word-frequency-using-wordcloud." class="level4">
+<h4 class="anchored" data-anchor-id="second-lets-check-word-frequency-using-wordcloud.">Second, let’s check word frequency using wordcloud.</h4>
+<div class="cell">
+<div class="cell-output cell-output-stderr">
+<pre><code>Joining with `by = join_by(word)`</code></pre>
+</div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="text-analysis_files/figure-html/wordcloud-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p><em>This word cloud visualizes the most frequently occurring terms in the literature dataset. The size of each word represents its frequency, making the most dominant themes immediately apparent. The largest words—including analysis, birth, black, cancer, and, risk, indicate that these are the most prominent terms in the text. Words are arranged in both horizontal and vertical orientations to create a compact thematic summary.</em></p>
+</section>
+<section id="lets-do-some-n-gram-analysis" class="level4">
+<h4 class="anchored" data-anchor-id="lets-do-some-n-gram-analysis">Let’s do some N-gram analysis</h4>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 95,251 × 4
+   title                                              keywords linenumber bigram
+   &lt;chr&gt;                                              &lt;chr&gt;         &lt;int&gt; &lt;chr&gt; 
+ 1 Desired Sterilization Procedure at the Time of Ce… Adult; …          1 to ev…
+ 2 Desired Sterilization Procedure at the Time of Ce… Adult; …          1 evalu…
+ 3 Desired Sterilization Procedure at the Time of Ce… Adult; …          1 wheth…
+ 4 Desired Sterilization Procedure at the Time of Ce… Adult; …          1 women…
+ 5 Desired Sterilization Procedure at the Time of Ce… Adult; …          1 with …
+ 6 Desired Sterilization Procedure at the Time of Ce… Adult; …          1 medic…
+ 7 Desired Sterilization Procedure at the Time of Ce… Adult; …          1 are l…
+ 8 Desired Sterilization Procedure at the Time of Ce… Adult; …          1 less …
+ 9 Desired Sterilization Procedure at the Time of Ce… Adult; …          1 likel…
+10 Desired Sterilization Procedure at the Time of Ce… Adult; …          1 than …
+# ℹ 95,241 more rows</code></pre>
+</div>
+</div>
+</section>
+<section id="check-the-most-common-bigram" class="level4">
+<h4 class="anchored" data-anchor-id="check-the-most-common-bigram">Check the most common bigram</h4>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 43,462 × 2
+   bigram                  n
+   &lt;chr&gt;               &lt;int&gt;
+ 1 95 ci                 502
+ 2 in the                384
+ 3 non hispanic          330
+ 4 white women           289
+ 5 black women           277
+ 6 compared with         273
+ 7 associated with       272
+ 8 p lt                  267
+ 9 confidence interval   262
+10 95 confidence         255
+# ℹ 43,452 more rows</code></pre>
+</div>
+</div>
+<p>The bigram “95 ci” occurs in a total of 502 titles.</p>
+</section>
+<section id="lets-remove-some-of-the-stop-words-from-the-bigram-column" class="level4">
+<h4 class="anchored" data-anchor-id="lets-remove-some-of-the-stop-words-from-the-bigram-column">LET’S REMOVE SOME OF THE STOP WORDS FROM THE BIGRAM COLUMN</h4>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code># A tibble: 35,241 × 5
+   title                                keywords linenumber firstword secondword
+   &lt;chr&gt;                                &lt;chr&gt;         &lt;int&gt; &lt;chr&gt;     &lt;chr&gt;     
+ 1 Desired Sterilization Procedure at … Adult; …          1 privately insured   
+ 2 Desired Sterilization Procedure at … Adult; …          1 insured   counterpa…
+ 3 Desired Sterilization Procedure at … Adult; …          1 desired   steriliza…
+ 4 Desired Sterilization Procedure at … Adult; …          1 steriliz… procedure 
+ 5 Desired Sterilization Procedure at … Adult; …          1 cesarean  delivery  
+ 6 Desired Sterilization Procedure at … Adult; …          1 secondary analysis  
+ 7 Desired Sterilization Procedure at … Adult; …          1 single    center    
+ 8 Desired Sterilization Procedure at … Adult; …          1 center    retrospec…
+ 9 Desired Sterilization Procedure at … Adult; …          1 retrospe… cohort    
+10 Desired Sterilization Procedure at … Adult; …          1 cohort    examining 
+# ℹ 35,231 more rows</code></pre>
+</div>
+</div>
+</section>
+<section id="creating-a-network-graph-from-the-n-gram" class="level4">
+<h4 class="anchored" data-anchor-id="creating-a-network-graph-from-the-n-gram">CREATING A NETWORK GRAPH FROM THE N-GRAM</h4>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="text-analysis_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p><em>This is a directed network graph illustrating common word pairs (bigrams) within the dataset. Each green node represents a unique word, while the arrows indicate the sequence and directional relationship of phrases appearing together in the text. The density of the arrows reveals thematic clusters, most notably a central focus on racial and ethnic disparities and a secondary cluster focused on maternal health and obstetric outcomes. Larger connections represent more frequent word pairings.</em></p>
 
 
+</section>
 
 </main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
