@@ -321,7 +321,7 @@ new_data3 |>
   theme_minimal()
 ```
 
-This faceted horizontal bar chart illustrates word frequencies categorized by sentiment in academic literature. Words associated with negative sentiment, including, cancer, risk, severe, appear in the left panel, while words associated with positive sentiment, survival, appear in the right panel. Bar lengths indicate relative word frequencies. The word that contributes the most to the sentiment scores for these titles is survival. All three terms—risk, cancer, and survival—show a maximum relative frequency of $1.00$ within their respective sentiment categories.
+This faceted horizontal bar chart illustrates word frequencies categorized by sentiment in academic literature. Words associated with negative sentiment, including, cancer, risk, severe, appear in the left panel, while words associated with positive sentiment, survival, appear in the right panel. Bar lengths indicate relative word frequencies. The word that contributes the most to the sentiment scores for these titles is survival. All three terms such as risk, cancer, and survival, show a maximum relative frequency of $1.00$ within their respective sentiment categories.
 
 #### Second: Let's Visualize Using Wordcloud.
 
@@ -342,7 +342,7 @@ wordcloud(words = w11$word,
           random.order = FALSE)
 ```
 
-This word cloud visualizes the most frequently occurring terms in the literature dataset. The size of each word represents its frequency, making the most dominant themes immediately apparent. The largest words—including analysis, birth, black, cancer, and, risk, indicate that these are the most prominent terms in the text. Words are arranged in both horizontal and vertical orientations to create a compact thematic summary.
+This word cloud visualizes the most frequently occurring terms in the literature dataset. The size of each word represents its frequency, making the most dominant themes immediately apparent. The largest words, including analysis, birth, black, cancer, and, risk, indicate that these are the most prominent terms in the text. Words are arranged in both horizontal and vertical orientations to create a compact thematic summary.
 
 ### N-gram Analysis with Abstracts
 
