@@ -43,7 +43,9 @@ install.packages("DT", repos = "https://cloud.r-project.org")
 ```
 
 ### Introduction
-This is my text analysis project, where I do sentiment analysis based on the Academic Literature on Racial and Ethnic Disparities in Reproductive Medicine in the US. My goal is simply just to gain a better understanding on how to conduct a text analysis, use regular expression, and create interactive plots. I will begin by tokenizing my dataset, exploring the most common words, stopwords, and then analyze whether text is positive, negative, or neutral. 
+This project explores text analysis and sentiment analysis using a dataset of academic literature on racial and ethnic disparities in reproductive medicine in the United States. The primary goal is to develop practical skills in text mining, including the use of regular expressions, tokenization, and data visualization techniques.
+
+The analysis begins by transforming the text into individual words (tokenization), followed by an exploration of the most frequently occurring terms. Common stopwords are then removed to focus on meaningful content. Finally, sentiment analysis is applied to classify the text as positive, negative, or neutral, providing insight into the overall tone and themes present in the literature.
 
 ### Data Frame
 ```{r echo = FALSE}
