@@ -35,6 +35,9 @@ Email: poryae1@stolaf.edu
 Linkedin: herpor  
 Handshake: herpor  
 
+### Link to Github
+[R code in github](https://github.com/herporp88/herpor88.github.io)
+
 :::
 
 :::
