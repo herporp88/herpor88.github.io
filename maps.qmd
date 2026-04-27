@@ -1,3 +1,326 @@
 ---
-title: "Maps"
+title: "Creating Informative Maps"
 ---
+
+### Creating Choropleth Maps
+
+In this page, I will be creating static and interactive choropleth maps using both numeric variable and the categorical variable. I will be using the the `states` dataset in the `poliscidata` package contains 135 variables on each of the 50 US states. The static plots will be created using the `maps` package and `ggplot()`, and the interactive plot will be created using the `sf` package and `leaflet()`.
+
+
+```{r}
+#| echo: false #“Run the code, but don’t show the code in the output.”
+#| include: false #run the code but show nothing
+#| message: false
+#| warning: false
+
+# Initial packages required (we'll be adding more)
+library(tidyverse)
+library(mdsr)      # package associated with our MDSR book
+library(rvest)
+library(polite)
+library(dplyr)
+library(stringr)
+library(readr)
+library(sf)
+library(leaflet)
+library(htmltools)
+library(glue)
+library(scales)
+```
+
+
+```{r}
+#| echo: false
+#| results: 'hide'
+#| message: false
+#| warning: false
+
+#Load the maps package and maps package contains geographic data. 
+library(maps)
+
+#We use the maps package to load the geographical data for all the U.S. states. These latitude-longitude points that ggplot uses to draw the shapes of U.S. states. 
+states_polygon <- as_tibble(map_data("state")) |> #We created a table using as_tibble()
+  select(region, group, order, lat, long) #Include only these variables
+
+# Check what the state (region) levels look like in states_polygon
+unique(states_polygon$region)
+
+
+#Next, load the sf package
+library(sf) #loads the sf package, it reads GeoJSON files, and it's required for interactive maps (leaflet)
+
+states_sf <- 
+  read_sf("https://rstudio.github.io/leaflet/json/us-states.geojson") |> #reads GeoJSON files
+  select(name, geometry)
+
+# See what the state (name) levels look like in states_sf
+unique(states_sf$name)
+
+
+#WHAT IS THE DIFFERENCE BETWEEN MAPS AND SF? 
+  #Both maps and sf contain the same type of geographic information (state shapes), but they store it in different formats.
+
+#Next, load the poliscidata package
+library(poliscidata)   #Loads the poliscidata package. It contains a dataset called states with many variables for each U.S. state.
+
+polisci_data <- as_tibble(poliscidata::states) |> #Turns it into a tibble (a modern, cleaner data frame)
+  select(state, carfatal07, cook_index3)
+
+# See what the state (state) levels look like in polisci_data
+unique(polisci_data$state)   # can't see trailing spaces but can see
+                             #   lack of internal spaces
+print(polisci_data)   # can see trailing spaces
+
+
+#Finally, we have three datasets: 
+#1. states_polygon 
+#2. states_sf
+#3. polisci_data
+```
+
+```{r}
+#| echo: false
+
+# Make sure all keys have the same format before joining:
+#   all lower case, no internal or external spaces
+
+# First, clean polygon names
+states_polygon_clean <- states_polygon |>
+  mutate(join_key = str_to_lower(region))
+
+# Second, clean sf names
+states_sf_clean <- states_sf |>
+  mutate(join_key = str_to_lower(name))
+
+#Third, clean polisci names
+polisci_clean <- polisci_data |>
+  mutate(join_key = state |>
+      str_squish() |>             
+      str_to_lower() |>           
+      str_replace_all(" ", ""))
+
+states_polygon_clean <- states_polygon_clean |>
+  mutate(join_key = str_replace_all(join_key, " ", "")) #replace " " (space) with "" (nothing)
+
+states_sf_clean <- states_sf_clean |>
+  mutate(join_key = str_replace_all(join_key, " ", ""))
+
+states_sf_clean <- states_sf_clean |>
+  filter(!(name %in% c("Alaska", "Hawaii", "Puerto Rico")))
+```
+
+
+```{r}
+#| echo: false
+#| include: false
+# Now we can merge data sets together for the static and the interactive plots
+
+#remove the same non-contiguous areas from states_polygon_clean.
+states_polygon_clean <- states_polygon_clean |>
+  filter(!(region %in% c("alaska", "hawaii", "puerto rico", "district of columbia")))
+
+#First, merge with states_polygon (static). What do we have in this dataset now? 
+static_map_data <- states_polygon_clean |>
+  left_join(polisci_clean, by = "join_key")
+
+# Check if that merge worked for 48 contiguous states
+static_map_data |>
+  distinct(region, carfatal07, cook_index3) |>
+  count()
+
+#remove the same non-contiguous areas from states_sf_clean.
+states_sf_clean <- states_sf_clean |>
+  filter(join_key != "districtofcolumbia")
+
+# Merge with states_sf (static or interactive)
+interactive_map_data <- states_sf_clean |>
+  left_join(polisci_clean, by = "join_key")
+
+# Check that merge worked for 48 contiguous states
+interactive_map_data |>
+  st_drop_geometry() |>
+  count()
+```
+
+### Data Frame
+```{r}
+#| warning: false
+#| echo: false #“Run the code, but don’t show the code in the output.”
+#| eval: false
+install.packages("DT", repos = "https://cloud.r-project.org")
+
+```
+
+#### Static Map Dataset: U.S. State-Level Data on Car Fatalities and Political Leaning (2007)
+```{r}
+#| echo: false #“Run the code, but don’t show the code in the output.”
+#| warning: false
+library(DT)
+datatable(
+  static_map_data |> 
+    select(join_key, lat, long, carfatal07, cook_index3) |> 
+    distinct(),
+  options = list(pageLength = 5))
+```
+
+#### Interactive Map Dataset: U.S. State Boundaries, Car Fatalities, and Political Leaning
+```{r}
+#| echo: false #“Run the code, but don’t show the code in the output.”
+#| warning: false
+library(DT)
+interactive_map_data |>
+  select(join_key, geometry, carfatal07, cook_index3) |>
+  datatable(options = list(pageLength = 5))
+```
+
+### I. Numeric Variable: Choropleth Maps Show Motor Vehicle Fatality Rates Vary Across U.S. States in 2007
+
+I will create two choropleth maps to illustrate how motor vehicle fatality rates vary across U.S. states in 2007. The first choropleth map will be a static map, with color representing the number of fatalities per 100,000 people. Lighter colors (yellow and orange) indicate states with higher fatality rates, while darker colors (purple and blue) represent states with lower rates. The second will be an interactive map, where color indicates the number of fatalities per 100,000 people. States with darker shades of blue indicate higher fatality rates, while lighter shades represent lower rates. Although both maps display the same underlying data, they present the information in different ways, with the interactive map allowing users to explore the data more dynamically.
+
+##### The Static Map
+```{r}
+#| echo: false
+#| fig-align: center
+# Numeric variable (static plot):
+ggplot(static_map_data, aes(x = long, y = lat, group = group)) +
+  geom_polygon(aes(fill = carfatal07), color = "white", linewidth = 0.2) +
+  coord_map() +
+  theme_void() +
+  scale_fill_viridis_c(option = "C", na.value = "grey90") +
+  labs(fill = "Car Fatalities (2007)",
+       title = "Car Fatalities by State")
+
+#Low carfatal07 will be dark 
+#High carfatal07 will be light yellow
+```
+
+##### The Interactive Map  
+```{r}
+#| echo: false
+#| fig-align: center
+# Numeric variable (interactive plot):
+# it's okay to skip a legend here
+pal_num <- colorNumeric(
+  palette = c("lightblue", "darkblue"),
+  domain = interactive_map_data$carfatal07)
+
+labels_num <- lapply(
+  paste0(
+    "<strong>", interactive_map_data$name, "</strong><br/>",
+    "Car fatalities (2007): ", interactive_map_data$carfatal07), HTML)
+
+#Code for the interactive plot
+leaflet(interactive_map_data) |>
+  addTiles() |>
+  setView(-96, 37.8, 4) |>
+  addPolygons(
+    fillColor = ~pal_num(carfatal07),
+    weight = 1,
+    color = "white",
+    fillOpacity = 0.9,
+    label = labels_num,
+    highlightOptions = highlightOptions(
+      weight = 1,
+      color = "red",
+      bringToFront = TRUE)) |>
+  addLegend(
+    "bottomright",
+    pal = pal_num,
+    values = ~carfatal07,
+    title = "Car Fatalities (2007)",
+    opacity = 1) |>
+  addControl(
+    html = "<h3>Geographic Distribution of Car Fatalities Across U.S. States (2007)</h3>",
+    position = "topright")
+```
+### Conlcusion  
+By looking at these two maps, we can conclude that higher motor vehicle fatality rates are more common in southern states such as Mississippi and Alabama, while lower rates appear in northeastern states like New York and Massachusetts. The static map helps us quickly see these overall patterns, while the interactive map allows us to explore specific states and view exact values.
+
+
+### II. Categorical Variable: Political Leaning of U.S. States in 2007 (Cook Index)  
+Next, I will be creating another two choropleth maps displaying the political leaning of each U.S. state using categorical variable. The color represents the political leaning of each U.S. state based on the Cook Index categories. Each state is classified as “More Democratic,” “Even,” or “More Republican,” with different shades indicating each category. The first map will be the static map, where darker shades represent states that lean more Democratic, lighter shades represent states that lean more Republican, and intermediate shades indicate politically balanced states. The second map will be the interactive choropleth map, where blue indicating Democratic-leaning states, green representing politically balanced states, and tan indicating Republican-leaning states.
+
+```{r}
+#| warning: false
+#| include: false #run the code but show nothing
+#| echo: false
+# Categorical variable (static plot):
+# be really careful with matching color order to factor level order
+unique(polisci_clean$cook_index3) #Shows all unique categories in cook_index3
+
+static_map_data <- static_map_data |>
+  mutate(cook_index3 = factor(cook_index3,
+      levels = c("More Dem", "Even", "More Rep")))
+```
+
+##### Static Map
+```{r}
+#| warning: false
+#| echo: false
+#| fig-align: center
+# may use colorFactor() here
+ggplot(static_map_data, aes(x = long, y = lat, group = group)) +
+  geom_polygon(aes(fill = cook_index3), color = "black", linewidth = 0.2) +
+  coord_map() +
+  theme_void() +
+  scale_fill_brewer(palette = "red", direction = -1, na.value = "skyblue") +
+  labs(fill = "Cook Index",
+       title = "Cook Partisan Voting Index by State")
+```
+
+
+#### The Interactive Map
+
+```{r}
+#| echo: false
+#| fig-align: center
+# Categorical variable (interactive plot):
+# Categorical variable setup
+interactive_map_data <- interactive_map_data |>
+  mutate(
+    cook_index3 = factor(
+      cook_index3,
+      levels = c("More Dem", "Even", "More Rep")))
+
+pal_cat <- colorFactor(
+  palette = c("green", "blue", "tan"),
+  domain = levels(interactive_map_data$cook_index3),
+  na.color = "lightblue")
+
+labels_cat <- lapply(
+  paste0(
+    "<strong>", interactive_map_data$name, "</strong><br/>",
+    "Cook Index: ", interactive_map_data$cook_index3), HTML)
+
+leaflet(interactive_map_data) |>
+  addTiles() |>
+  setView(-96, 37.8, 4) |>
+  addPolygons(
+    fillColor = ~pal_cat(cook_index3),
+    weight = 1,
+    color = "red",
+    fillOpacity = 0.8,
+    label = labels_cat,
+    highlightOptions = highlightOptions(
+      weight = 1,
+      color = "black",
+      bringToFront = TRUE)) |>
+  addLegend(
+    "bottomright",
+    pal = pal_cat,
+    values = ~cook_index3,
+    title = "Cook Index",
+    opacity = 0.8) |>
+  addControl(
+    html = "<h3>Cook Partisan Voting Index by State</h3>",
+    position = "topright"
+  )
+```
+
+### Conclusion  
+These two maps show that democratic-leaning states are clearly concentrated along the West Coast and Northeast, including states such as California, Oregon, Washington, New York, and Massachusetts. In contrast, Republican-leaning states are more common in the South and parts of the central United States, including Texas, Oklahoma, Alabama, and Wyoming. States labeled as “Even,” such as Florida, Ohio, and Colorado, are scattered across different regions and may represent politically competitive or swing states.
+
+### Reference  
+- states: https://www.rdocumentation.org/packages/maps/versions/3.4.2/topics/state
+- states_sf: https://rstudio.github.io/leaflet/json/us-states.geojson
+- poliscidata::states: https://rdrr.io/cran/poliscidata/man/states.html

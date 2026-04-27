@@ -2,8 +2,8 @@
 title: "Text Analysis Project"
 ---
 
-```{r}
-#| include: false
+```{r echo=FALSE}
+#| include=FALSE
 library(tidyverse)
 library(tidytext)
 library(textdata)
@@ -18,11 +18,10 @@ library(ggraph)
 library(ggplot2)
 ```
 
-#### Load the dataset
-
 ```{r}
-#| include: false
-
+#| echo: false #“Run the code, but don’t show the code in the output.”
+#| include: false #run the code but show nothing
+#Load the dataset
 article_dat <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2025/2025-02-25/article_dat.csv')
 
 #I want only three columns
@@ -31,9 +30,24 @@ academic_Literature <- readr::read_csv('https://raw.githubusercontent.com/rforda
 
 ```
 
-#### My plan is that I want to do sentiment analysis using the title and abstract.
+```{r}
+#| warning: false
+#| echo: false #“Run the code, but don’t show the code in the output.”
+#| eval: false
+install.packages("DT", repos = "https://cloud.r-project.org")
+```
 
+```{r}
+#| echo: false #“Run the code, but don’t show the code in the output.”
+#| eval: false
+```
+
+### Introduction
+This is my text analysis project, where I do sentiment analysis based on the Academic Literature on Racial and Ethnic Disparities in Reproductive Medicine in the US. My goal is simply just to gain a better understanding on how to conduct a text analysis, use regular expression, and create interactive plots. I will begin by tokenizing my dataset, exploring the most common words, stopwords, and then analyze whether text is positive, negative, or neutral. 
+
+### Data Frame
 ```{r echo = FALSE}
+#| include=FALSE
 #I want to remove some symbols from my data from the title variable.  
 filter1 <- academic_Literature |>
   mutate(newtitle = gsub("\\[.*?\\]|[;:0-9/()]", "", title)) |> 
@@ -43,61 +57,174 @@ filter1 <- academic_Literature |>
 view(filter1)
 ```
 
-#### Before I tokenize the newtitle, I want to check the number of words and characters in each title.
+```{r}
+#| echo: false #“Run the code, but don’t show the code in the output.”
+library(DT)
+
+datatable(
+  filter1 |> 
+    select(New_title = newtitle, 
+           New_keyword = new_keyword) |>  # pick key columns
+    head(10),
+  options = list(pageLength = 2))
+```
+
+### Data Exploration 
+
+#### Which title is the longest and how mnany words are there in it? 
 
 ```{r}
-filter1 |> 
+#| message: false
+#| warning: false
+#| echo: false #“Run the code, but don’t show the code in the output.”
+data88 <- filter1 |> 
   mutate(word_count = lengths(str_split(newtitle, " "))) |>
   arrange(desc(word_count)) |>
   slice_head(n = 5)
+
+data88 |>
+  mutate(newtitle = str_remove_all(newtitle, "[[:punct:]]")) |>
+  select(
+    NewTitle = newtitle,
+    WordCount = word_count
+  ) |>
+  slice_head(n = 5) |>
+  knitr::kable(caption = "Longest Titles")
 ```
 
-The highest number of words in a title is 27 words
+#### Does the longest title always have the most characters?
 
-#### Let's check the number of characters for the 3 top longest newtitle with the longest title.
+```{r}
+#| message: false
+#| warning: false
+#| echo: false #“Run the code, but don’t show the code in the output.”
 
-```{r echo = FALSE}
-filter1 |>
+data89 <- filter1 |>
   mutate(char_count = str_length(str_remove_all(newtitle, " "))) |>
   arrange(desc(char_count)) |>
   slice_head(n = 3)
+
+#Space is excluded
+data89 |>
+  mutate(
+    newtitle = str_remove_all(newtitle, "[[:punct:]]"),
+    newtitle = str_squish(newtitle),
+    char_count = str_length(str_remove_all(newtitle, " "))
+  ) |>
+  select(
+    NewTitle = newtitle,
+    CharCount = char_count
+  ) |>
+  knitr::kable(caption = "Longest Titles (by Character Count)")
 ```
 
-The highest number of characters in a title is 171 characters.
+No, the longest title doees not always have the most characters. 
 
-#### Now, let's tokenize the newtitle that I have cleaned up.
+### Tokenization
+
+#### Tokenizing the Title Variable. 
 
 ```{r}
+#| echo: false #“Run the code, but don’t show the code in the output.”
 new_data1 <- filter1 |>
-  mutate(line = row_number()) |> #assigns index or number to each by starting from 1. 
-  unnest_tokens(word, newtitle, token = "words") 
-print(new_data1)
+  mutate(line = row_number()) |>
+  unnest_tokens(word, newtitle, token = "words")
+
+new_data1 |>
+  slice_head(n = 10) |>
+  select(
+    Line = line,
+    Words = word
+  ) |>
+  knitr::kable(
+  caption = "<strong style='font-size:18px; color:black;'>10 Tokenized Words (Title)</strong>",
+  escape = FALSE)
 ```
 
-#### I also tokenized the keywords variable so that I can use it later.
+#### Tokenizing the Keywords Variable
 
 ```{r}
+#| echo: false #“Run the code, but don’t show the code in the output.”
 new_data2 <- filter1 |>
   mutate(line = row_number()) |> #assigns index or number to each by starting from 1. 
   unnest_tokens(word, new_keyword, token = "words")
-print(new_data2)
+
+new_data2 |>
+  slice_head(n = 10) |>
+  select(
+    Line = line,
+    Words = word
+  ) |>
+  knitr::kable(
+  caption = "<strong style='font-size:18px; color:black;'>10 Tokenized Words (Keywords)</strong>",
+  escape = FALSE)
+
 ```
 
-#### After tokenizing the newtitle, the total rows I have are more 4 thounsands, so next I want to remove some of the stop_words.
+### Stopwords Exploration
 
-```{r echo = FALSE}
+```{r}
+#| echo: false #“Run the code, but don’t show the code in the output.”
+#| include: false #run the code but show nothing
  #GET STOPWORDS DIFFERENT SOURCES
 snowball <- get_stopwords(source = "snowball")
 smart_stopwords <- get_stopwords(source = "smart")
 nltkstop <- get_stopwords(source = "nltk")
+```
 
-#Now let's match the stop_words, and then remove 
+#### Snowball
+
+```{r}
+#| message: false
+#| warning: false
+#| echo: false #“Run the code, but don’t show the code in the output.”
+library(DT)
+
+datatable(
+  snowball,
+  options = list(
+    pageLength = 5,   # show 10 rows at a time
+    autoWidth = TRUE
+  ),
+  caption = "Snowball Stopwords"
+)
+```
+
+#### Let's remove the stopwords above from the Word variable (title) and create a table. 
+
+```{r}
+#| message: false
+#| warning: false
+#REMOVE STOPWORDS & COUNT WORD FREQUENCY
 new_data3 <- new_data1 |>
-  anti_join(smart_stopwords) |> #ANTI_JOIN WILL RETURN ONLY THE ROWS IN new_data THAT DO NOT HAVE A MATCH IN smart_stopwords.
+  anti_join(smart_stopwords) |>
   count(word, sort = TRUE) |> 
-  filter(word != "NA") |> #REMOVE NA FROM THE WORD COLUMN
-  slice_max(n, n = 30) #I want only the top 30 words are most common. 
+  filter(word != "NA") |>
+  slice_max(n, n = 30)
 
+```
+
+
+```{r}
+#| message: false
+#| warning: false
+#| echo: false #“Run the code, but don’t show the code in the output.”
+
+new_data3 |>
+  slice_head(n = 10) |>
+  select(
+    Words = word,
+    Count = n
+  ) |>
+  knitr::kable(
+  caption = "<strong style='font-size:18px; color:black;'>10 Most Common Words In Title After Removing Stopwords</strong>",
+  escape = FALSE)
+```
+
+### Word Frequency Bar Chart
+
+```{r}
+#| echo: false #“Run the code, but don’t show the code in the output.”
 #Let's see how it looks like in a graph
 new_data3 |>
   ggplot(aes(fct_reorder(word, n), n)) +
@@ -109,21 +236,44 @@ new_data3 |>
   theme_minimal()
 ```
 
-*This is a horizontal bar chart showing the frequency of each word, where the longest bar represent the most common word, and the shortest bar represents most least common word. On the y-axis is words, containing 32 words, while on the x-axis the frequency of each word, ranging from 1 time to approximately 130 times. Overall, the distribution of this bar chart shows a significant emphasis on oncology and healthcare disparities.*
+This horizontal bar chart displays the frequency of the most common words in the dataset, where longer bars indicate higher word frequency. Words such as “cancer,” “disparities,” and “racial” appear most frequently, suggesting a strong focus on healthcare, particularly in oncology and health disparities. Because the chart is flipped, the word labels are shown on the y-axis, while the frequency values are displayed along the x-axis. This layout makes it easier to read longer words and compare their frequencies visually. Overall, the distribution highlights a clear thematic emphasis on cancer research, patient outcomes, and demographic disparities, providing insight into the primary topics present in the literature.
 
-#### Next let's explore different sentiment lexicons
+#### Let's Explore The Bing Sentiment Lexicons
 
 ```{r}
+#| echo: false #“Run the code, but don’t show the code in the output.”
 #| include: false
 #Let's get the sentiment lexicon
-afin1_sentiment <- get_sentiments(lexicon = "afinn")
-nrc1_sentiment <- get_sentiments(lexicon = "nrc")
-bing1_sentiment <- get_sentiments(lexicon = "bing")
+afin1_sentiment <- get_sentiments(lexicon = "afinn") #Each word has a numeric score (e.g., −5 to +5)
+nrc1_sentiment <- get_sentiments(lexicon = "nrc") #Words are labeled with emotions
 ```
 
-#### Implement sentiment analysis with the BING and titles
+```{r}
+#| message: false
+#| warning: false
+#| echo: false #“Run the code, but don’t show the code in the output.”
+bing1_sentiment <- get_sentiments(lexicon = "bing") #Classifies words as: positive and negative
 
-```{r echo = FALSE}
+bing1_sentiment |>
+  slice_head(n = 10) |>
+  select(
+    Words = word,
+    Sentiment = sentiment) |>
+  knitr::kable(
+  caption = "<strong style='font-size:18px; color:black;'>10 Example Words with Sentiments</strong>",
+  escape = FALSE)
+```
+
+
+### Implement Sentiment Analysis with the BING
+
+#### Are titles more positve, negative, or neutral?
+
+```{r}
+#| message: false
+#| warning: false
+#| echo: false #“Run the code, but don’t show the code in the output.”
+#| include: FALSE
 
 #I want to keep only words that have a match with the bing sentiment lexicons. 
 new_data3 |>
@@ -134,7 +284,24 @@ new_data3 |>
   inner_join(bing1_sentiment) |>
   group_by(sentiment) %>%          # group by positive/negative
   summarise(avg_n = mean(n))       # calculate average count per sentiment
+```
 
+#### Data Table
+```{r}
+#| message: false
+#| warning: false
+#| echo: false #“Run the code, but don’t show the code in the output.”
+new_data3 |>
+  inner_join(bing1_sentiment) |>
+  knitr::kable(caption = "Top Words with Sentiment Labels")
+```
+
+#### First: Let's visualize with bar chart
+
+```{r}
+#| message: false
+#| warning: false
+#| echo: false #“Run the code, but don’t show the code in the output.”
 #What words contribute the most to sentiment scores for these titles? 
 new_data3 |>
   inner_join(bing1_sentiment) |>
@@ -152,12 +319,14 @@ new_data3 |>
   theme_minimal()
 ```
 
-*This faceted horizontal bar chart illustrates word frequencies categorized by sentiment in academic literature. Words associated with negative sentiment, including, cancer, risk, severe, appear in the left panel, while words associated with positive sentiment, survival, appear in the right panel. Bar lengths indicate relative word frequencies. The word that contributes the most to the sentiment scores for these titles is survival. All three terms—risk, cancer, and survival—show a maximum relative frequency of* $1.00$ within their respective sentiment categories.
+This faceted horizontal bar chart illustrates word frequencies categorized by sentiment in academic literature. Words associated with negative sentiment, including, cancer, risk, severe, appear in the left panel, while words associated with positive sentiment, survival, appear in the right panel. Bar lengths indicate relative word frequencies. The word that contributes the most to the sentiment scores for these titles is survival. All three terms—risk, cancer, and survival—show a maximum relative frequency of $1.00$ within their respective sentiment categories.
 
-#### Second, let's check word frequency using wordcloud.
+#### Second: Let's Visualize Using Wordcloud.
 
-```{r wordcloud, warning=FALSE, echo = FALSE}
-
+```{r}
+#| message: false
+#| warning: false
+#| echo: false #“Run the code, but don’t show the code in the output.”
 # wordcloud wants a column with words and another column with counts
 w11 <- new_data3 |>
   anti_join(stop_words) |>
@@ -171,40 +340,59 @@ wordcloud(words = w11$word,
           random.order = FALSE)
 ```
 
-*This word cloud visualizes the most frequently occurring terms in the literature dataset. The size of each word represents its frequency, making the most dominant themes immediately apparent. The largest words—including analysis, birth, black, cancer, and, risk, indicate that these are the most prominent terms in the text. Words are arranged in both horizontal and vertical orientations to create a compact thematic summary.*
+This word cloud visualizes the most frequently occurring terms in the literature dataset. The size of each word represents its frequency, making the most dominant themes immediately apparent. The largest words—including analysis, birth, black, cancer, and, risk, indicate that these are the most prominent terms in the text. Words are arranged in both horizontal and vertical orientations to create a compact thematic summary.
 
-#### Let's do some N-gram analysis
+### N-gram Analysis with Abstracts
 
-```{r echo = FALSE}
+#### First: I will begin by breaking the abstracts into bigrams, and the table belo is just showing only 10 example bigrams. 
+
+```{r}
+#| echo: false #“Run the code, but don’t show the code in the output.”
 LiteratureNgram <- academic_Literature |> 
   group_by(abstract) |> 
   mutate(linenumber = row_number()) |>
   ungroup() |>
   unnest_tokens(bigram,  abstract, token = "ngrams", n = 2) |> 
   filter(bigram != "NA")
-  
-LiteratureNgram
+
+LiteratureNgram |>
+  slice_head(n = 10) |>
+  select(
+    Linenumber = linenumber, 
+    Bigram = bigram) |>
+  knitr::kable(
+  caption = "<strong style='font-size:18px; color:black;'>10 Example Bigram Words</strong>",
+  escape = FALSE)
 ```
 
-#### Check the most common bigram
+#### Second: Check the most common bigram
 
-```{r echo = FALSE}
-
-LiteratureNgram |> 
+```{r}
+#| echo: false #“Run the code, but don’t show the code in the output.”
+BB1 <- LiteratureNgram |> 
   count(bigram, sort = TRUE)
+
+BB1 |>
+  slice_head(n = 10) |>
+  select(
+    Bigram = bigram, 
+    Count = n) |>
+  knitr::kable(
+  caption = "<strong style='font-size:18px; color:black;'>10 Most Common Bigram Words</strong>",
+  escape = FALSE)
 ```
 
-The bigram “95 ci” occurs in a total of 502 titles.
+The most common bigram is “95 ci”, which occurs in a total of 502 times.
 
-#### LET'S REMOVE SOME OF THE STOP WORDS FROM THE BIGRAM COLUMN
+#### Third: Remove Some of the Stopwrods From the Bigram Column
 
-```{r echo = FALSE}
+```{r}
+#| echo: false #“Run the code, but don’t show the code in the output.”
 bigrams_filter1 <- LiteratureNgram |>
   separate(bigram, c("firstword", "secondword"), sep = " ") |>
   filter(!firstword %in% stop_words$word,
          !secondword %in% stop_words$word) |>
   filter(!is.na(firstword) & !is.na(secondword))
-bigrams_filter1
 
 #After removing some of the stop-words, I reunited both columns of the bigram to be one column. 
 bigrams_filter2 <- bigrams_filter1 |>
@@ -219,7 +407,9 @@ bigrams_filter3 <- bigrams_filter2 |>
   mutate(word_count = str_count(title, "\\S+")) |> #count how many words per each title
   arrange(desc(word_count)) #arrange from highest word_count to the lowest word_count
 
-#Here I want to know how many titles contain only 5 words, 10 words, or 20 words. 
+#Extra Data with Title
+
+#Here I want to know how many title contain only 5 words, 10 words, or 20 words. 
 bigrams_filter4 <- bigrams_filter3 |>
   count(word_count)
 
@@ -230,10 +420,25 @@ bigrams_filter5 <- bigrams_filter3 |>
 
 ```
 
-#### CREATING A NETWORK GRAPH FROM THE N-GRAM
 
-```{r echo = FALSE}
+```{r}
+#| message: false
+#| warning: false
+#| echo: false #“Run the code, but don’t show the code in the output.”
+bigrams_filter3 |>
+  slice_head(n = 10) |>
+  select(Linenumber = linenumber,
+    Bigram = bigram) |>
+  knitr::kable(
+  caption = "<strong style='font-size:18px; color:black;'>10 Example Bigram Words Without Stopwords</strong>",
+  escape = FALSE)
+```
 
+
+#### Fourth: Creating a Network Graph From the Bigram
+
+```{r}
+#| echo: false #“Run the code, but don’t show the code in the output.”
 bigrams_filter6 <- LiteratureNgram |> #LiteratureNgram contains bigram tokenized words
   separate(bigram, c("firstword", "secondword"), sep = " ") |> #separate the bigram column
   filter(!firstword %in% stop_words$word, #remove all the stop-words from the bigram column 
@@ -251,14 +456,31 @@ bigram_graph8 <- bigrams_filter6 |>
 set.seed(2020)
 a <- grid::arrow(type = "closed", length = unit(.15, "inches"))
 
+library(ggtext)
+
 ggraph(bigram_graph8, layout = "fr") +
   geom_edge_link(aes(edge_alpha = n), show.legend = FALSE,
                  arrow = a, end_cap = circle(.07, 'inches')) +
-  geom_node_point(color = "green", size = 5) +
+  geom_node_point(color = "blue", size = 5) +
   geom_node_text(aes(label = name), vjust = 1, hjust = 1) +
-  labs(title = "Network of Common Word Pairs (Bigrams)",
-    subtitle = "Connections between words appearing together in the text") +
-  theme_void()
+  labs(
+    title = "<strong style='font-size:18px; color:black;'>10 Example Bigram Words Without Stopwords</strong>",
+    subtitle = "Connections between words appearing together in the text"
+  ) +
+  theme_void() +
+  theme(
+    plot.title = element_markdown(),
+    plot.subtitle = element_text(size = 12)
+  )
 ```
 
-*This is a directed network graph illustrating common word pairs (bigrams) within the dataset. Each green node represents a unique word, while the arrows indicate the sequence and directional relationship of phrases appearing together in the text. The density of the arrows reveals thematic clusters, most notably a central focus on racial and ethnic disparities and a secondary cluster focused on maternal health and obstetric outcomes. Larger connections represent more frequent word pairings.*
+This is a directed network graph illustrating common word pairs (bigrams) within the dataset. Each green node represents a unique word, while the arrows indicate the sequence and directional relationship of phrases appearing together in the text. The density of the arrows reveals thematic clusters, most notably a central focus on racial and ethnic disparities and a secondary cluster focused on maternal health and obstetric outcomes. Larger connections represent more frequent word pairings.
+
+### Reference 
+* Academic Literature on Racial and Ethnic Disparities in Reproductive Medicine in the US. [see the source here](https://github.com/rfordatascience/tidytuesday/blob/main/data/2025/2025-02-25/readme.md)
+* Stopwords: [online source](https://juliasilge.github.io/tidytext/reference/get_stopwords.html)
+* get_sentiments("bing") R Package
+* Sentiment: [online source](https://www.cs.uic.edu/~liub/FBS/sentiment-analysis.html)
+
+
+

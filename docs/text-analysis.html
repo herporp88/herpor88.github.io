@@ -105,6 +105,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     "search-label": "Search"
   }
 }</script>
+<link href="site_libs/htmltools-fill-0.5.9/fill.css" rel="stylesheet">
+<script src="site_libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+<link href="site_libs/datatables-css-0.0.0/datatables-crosstalk.css" rel="stylesheet">
+<script src="site_libs/datatables-binding-0.34.0/datatables.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<link href="site_libs/dt-core-1.13.6/css/jquery.dataTables.min.css" rel="stylesheet">
+<link href="site_libs/dt-core-1.13.6/css/jquery.dataTables.extra.css" rel="stylesheet">
+<script src="site_libs/dt-core-1.13.6/js/jquery.dataTables.min.js"></script>
+<link href="site_libs/crosstalk-1.2.2/css/crosstalk.min.css" rel="stylesheet">
+<script src="site_libs/crosstalk-1.2.2/js/crosstalk.min.js"></script>
 
   <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
   <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
@@ -166,7 +176,7 @@ window.Quarto = {
   </li>  
   <li class="nav-item">
     <a class="nav-link" href="./maps.html"> 
-<span class="menu-text">Maps</span></a>
+<span class="menu-text">Creating Informative Maps</span></a>
   </li>  
 </ul>
           </div> <!-- /navcollapse -->
@@ -179,11 +189,25 @@ window.Quarto = {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar zindex-bottom">
-        
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#data-frame" id="toc-data-frame" class="nav-link" data-scroll-target="#data-frame">Data Frame</a></li>
+  <li><a href="#data-exploration" id="toc-data-exploration" class="nav-link" data-scroll-target="#data-exploration">Data Exploration</a></li>
+  <li><a href="#tokenization" id="toc-tokenization" class="nav-link" data-scroll-target="#tokenization">Tokenization</a></li>
+  <li><a href="#stopwords-exploration" id="toc-stopwords-exploration" class="nav-link" data-scroll-target="#stopwords-exploration">Stopwords Exploration</a></li>
+  <li><a href="#word-frequency-bar-chart" id="toc-word-frequency-bar-chart" class="nav-link" data-scroll-target="#word-frequency-bar-chart">Word Frequency Bar Chart</a></li>
+  <li><a href="#implement-sentiment-analysis-with-the-bing" id="toc-implement-sentiment-analysis-with-the-bing" class="nav-link" data-scroll-target="#implement-sentiment-analysis-with-the-bing">Implement Sentiment Analysis with the BING</a></li>
+  <li><a href="#n-gram-analysis-with-abstracts" id="toc-n-gram-analysis-with-abstracts" class="nav-link" data-scroll-target="#n-gram-analysis-with-abstracts">N-gram Analysis with Abstracts</a></li>
+  <li><a href="#reference" id="toc-reference" class="nav-link" data-scroll-target="#reference">Reference</a></li>
+  </ul>
+</nav>
     </div>
 <!-- main -->
-<main class="content column-page" id="quarto-document-content">
+<main class="content column-page-left" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
@@ -192,7 +216,7 @@ window.Quarto = {
 
 
 
-<div class="quarto-title-meta column-page">
+<div class="quarto-title-meta column-page-left">
 
     
   
@@ -204,244 +228,632 @@ window.Quarto = {
 </header>
 
 
-<section id="load-the-dataset" class="level4">
-<h4 class="anchored" data-anchor-id="load-the-dataset">Load the dataset</h4>
+<section id="introduction" class="level3">
+<h3 class="anchored" data-anchor-id="introduction">Introduction</h3>
+<p>This is my text analysis project, where I do sentiment analysis based on the Academic Literature on Racial and Ethnic Disparities in Reproductive Medicine in the US. My goal is simply just to gain a better understanding on how to conduct a text analysis, use regular expression, and create interactive plots. I will begin by tokenizing my dataset, exploring the most common words, stopwords, and then analyze whether text is positive, negative, or neutral.</p>
 </section>
-<section id="my-plan-is-that-i-want-to-do-sentiment-analysis-using-the-title-and-abstract." class="level4">
-<h4 class="anchored" data-anchor-id="my-plan-is-that-i-want-to-do-sentiment-analysis-using-the-title-and-abstract.">My plan is that I want to do sentiment analysis using the title and abstract.</h4>
-</section>
-<section id="before-i-tokenize-the-newtitle-i-want-to-check-the-number-of-words-and-characters-in-each-title." class="level4">
-<h4 class="anchored" data-anchor-id="before-i-tokenize-the-newtitle-i-want-to-check-the-number-of-words-and-characters-in-each-title.">Before I tokenize the newtitle, I want to check the number of words and characters in each title.</h4>
+<section id="data-frame" class="level3">
+<h3 class="anchored" data-anchor-id="data-frame">Data Frame</h3>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>filter1 <span class="sc">|&gt;</span> </span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">word_count =</span> <span class="fu">lengths</span>(<span class="fu">str_split</span>(newtitle, <span class="st">" "</span>))) <span class="sc">|&gt;</span></span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(word_count)) <span class="sc">|&gt;</span></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_head</span>(<span class="at">n =</span> <span class="dv">5</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 5 × 6
-  title                        abstract keywords newtitle new_keyword word_count
-  &lt;chr&gt;                        &lt;chr&gt;    &lt;chr&gt;    &lt;chr&gt;    &lt;chr&gt;            &lt;int&gt;
-1 A single baseline ultrasoun… How wel… disease… A singl… disease pr…         27
-2 Impact of racial disparitie… We asse… Gynecol… Impact … Gynecologi…         27
-3 Trends of racial disparitie… To dete… African… Trends … African Co…         26
-4 Disparities in cervical can… During … Cancer … Dispari… Cancer sta…         26
-5 Black race associated with … To eval… Frozen … Black r… Frozen emb…         26</code></pre>
-</div>
-</div>
-<p>The highest number of words in a title is 27 words</p>
-</section>
-<section id="lets-check-the-number-of-characters-for-the-3-top-longest-newtitle-with-the-longest-title." class="level4">
-<h4 class="anchored" data-anchor-id="lets-check-the-number-of-characters-for-the-3-top-longest-newtitle-with-the-longest-title.">Let’s check the number of characters for the 3 top longest newtitle with the longest title.</h4>
-<div class="cell">
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 3 × 6
-  title                        abstract keywords newtitle new_keyword char_count
-  &lt;chr&gt;                        &lt;chr&gt;    &lt;chr&gt;    &lt;chr&gt;    &lt;chr&gt;            &lt;int&gt;
-1 Black race associated with … To eval… Frozen … Black r… Frozen emb…        171
-2 Systematic Next Generation … Both in… African… Systema… African Am…        165
-3 A single baseline ultrasoun… How wel… disease… A singl… disease pr…        163</code></pre>
-</div>
-</div>
-<p>The highest number of characters in a title is 171 characters.</p>
-</section>
-<section id="now-lets-tokenize-the-newtitle-that-i-have-cleaned-up." class="level4">
-<h4 class="anchored" data-anchor-id="now-lets-tokenize-the-newtitle-that-i-have-cleaned-up.">Now, let’s tokenize the newtitle that I have cleaned up.</h4>
-<div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>new_data1 <span class="ot">&lt;-</span> filter1 <span class="sc">|&gt;</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">line =</span> <span class="fu">row_number</span>()) <span class="sc">|&gt;</span> <span class="co">#assigns index or number to each by starting from 1. </span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unnest_tokens</span>(word, newtitle, <span class="at">token =</span> <span class="st">"words"</span>) </span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(new_data1)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 4,318 × 6
-   title                               abstract keywords new_keyword  line word 
-   &lt;chr&gt;                               &lt;chr&gt;    &lt;chr&gt;    &lt;chr&gt;       &lt;int&gt; &lt;chr&gt;
- 1 Desired Sterilization Procedure at… To eval… Adult; … Adult Cesa…     1 desi…
- 2 Desired Sterilization Procedure at… To eval… Adult; … Adult Cesa…     1 ster…
- 3 Desired Sterilization Procedure at… To eval… Adult; … Adult Cesa…     1 proc…
- 4 Desired Sterilization Procedure at… To eval… Adult; … Adult Cesa…     1 at   
- 5 Desired Sterilization Procedure at… To eval… Adult; … Adult Cesa…     1 the  
- 6 Desired Sterilization Procedure at… To eval… Adult; … Adult Cesa…     1 time 
- 7 Desired Sterilization Procedure at… To eval… Adult; … Adult Cesa…     1 of   
- 8 Desired Sterilization Procedure at… To eval… Adult; … Adult Cesa…     1 cesa…
- 9 Desired Sterilization Procedure at… To eval… Adult; … Adult Cesa…     1 deli…
-10 Desired Sterilization Procedure at… To eval… Adult; … Adult Cesa…     1 acco…
-# ℹ 4,308 more rows</code></pre>
+<div class="cell-output-display">
+<div class="datatables html-widget html-fill-item" id="htmlwidget-9c6a160432c11594a81d" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-9c6a160432c11594a81d">{"x":{"filter":"none","vertical":false,"data":[["1","2","3","4","5","6","7","8","9","10"],["Desired Sterilization Procedure at the Time of Cesarean Delivery According to Insurance Status.","Medicaid and Medicare payer status are associated with worse surgical outcomes in gynecologic oncology.","Identifying disparities in germline and somatic testing for ovarian cancer.","Exploring the impact of income and race on survival for women with advanced ovarian cancer undergoing primary debulking surgery at a high-volume center.","Impact of age at diagnosis on racial disparities in endometrial cancer patients.","The generalizability of NCI-sponsored clinical trials accrual among women with gynecologic malignancies.","Surgical wait time A new health indicator in women with endometrial cancer.","Disparities in receipt of care for high-grade endometrial cancer A National Cancer Data Base analysis.","Dying well How equal is end of life care among gynecologic oncology patients?","Assessment of sexual activity and dysfunction in medically underserved women with gynecologic cancers."],["Adult Cesarean Section Cohort Studies Female Healthcare Disparities Humans Insurance Coverage Medicaid Ohio Patient Preference Pregnancy Prenatal Care Retrospective Studies Sterilization, Tubal United States","Health disparities Medicaid Medicare Outcomes Payer status Female Genital Neoplasms, Female Gynecologic Surgical Procedures Healthcare Disparities Hospital Costs Humans Length of Stay Medicaid Medicare Middle Aged Pain, Postoperative Patient Readmission Retrospective Studies San Francisco Treatment Outcome United States","Adult Aged Aged,  and over BRCA Protein BRCA Protein Female Genetic Testing Germ-Line Mutation Healthcare Disparities Humans Medicaid Medicare Middle Aged Mutation Neoplasm Recurrence, Local Ovarian Neoplasms Retrospective Studies United States Young Adult","High volume centers Income disparities Ovarian cancer Racial disparities Adult Aged Aged,  and over Carcinoma, Ovarian Epithelial Cohort Studies Continental Population Groups Cytoreduction Surgical Procedures Female Humans Income Middle Aged Neoplasms, Glandular and Epithelial Ovarian Neoplasms Retrospective Studies Socioeconomic Factors Treatment Outcome Young Adult","Age Disparity Endometrial cancer Race SEER Survival African Continental Ancestry Group Age of Onset Aged Endometrial Neoplasms European Continental Ancestry Group Female Healthcare Disparities Humans Middle Aged PTEN Phosphohydrolase SEER Program Tumor Suppressor Protein p United States","Clinical trials Disparities SEER Adult African Americans Age Factors Aged Clinical Trials as Topic Ethnic Groups Female Genital Neoplasms, Female Geography Hispanic Americans Humans Insurance, Health Medically Uninsured Middle Aged Minority Groups National Cancer Institute U.S. Ovarian Neoplasms Patient Selection SEER Program United States Uterine Cervical Neoplasms Uterine Neoplasms","Delayed treatment Endometrial cancer Surgical wait time Adult Aged Carcinoma, Endometrioid Endometrial Neoplasms Female Humans Insurance, Health Middle Aged Minority Groups Proportional Hazards Models Socioeconomic Factors Time-to-Treatment United States","Adenocarcinoma, Clear Cell Adenocarcinoma, Papillary African Americans Aged Carcinoma, Endometrioid Carcinosarcoma Cause of Death Chemotherapy, Adjuvant Comorbidity Databases, Factual Education Endometrial Neoplasms Ethnic Groups European Continental Ancestry Group Female Healthcare Disparities Hispanic Americans Humans Hysterectomy Insurance Coverage Kaplan-Meier Estimate Middle Aged Neoplasm Grading Neoplasm Staging Neoplasms, Cystic, Mucinous, and Serous Proportional Hazards Models Retrospective Studies Social Class Survival Rate United States","Advance directives End of life care Hospice Adult Advance Directives Aged Aged,  and over Female Genital Neoplasms, Female Healthcare Disparities Hospices Humans Middle Aged Palliative Care Retrospective Studies Terminal Care Young Adult","Depression Gynecologic cancer Sexual activity Sexual dysfunction Underserved Cross-Sectional Studies Depression Female Genital Neoplasms, Female Health Services Accessibility Humans Medicaid Medically Underserved Area Medically Uninsured Middle Aged Poverty Sexual Dysfunction, Physiological Texas United States"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>New_title<\/th>\n      <th>New_keyword<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":2,"columnDefs":[{"orderable":false,"targets":0},{"name":" ","targets":0},{"name":"New_title","targets":1},{"name":"New_keyword","targets":2}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[2,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 </section>
-<section id="i-also-tokenized-the-keywords-variable-so-that-i-can-use-it-later." class="level4">
-<h4 class="anchored" data-anchor-id="i-also-tokenized-the-keywords-variable-so-that-i-can-use-it-later.">I also tokenized the keywords variable so that I can use it later.</h4>
+<section id="data-exploration" class="level3">
+<h3 class="anchored" data-anchor-id="data-exploration">Data Exploration</h3>
+<section id="which-title-is-the-longest-and-how-mnany-words-are-there-in-it" class="level4">
+<h4 class="anchored" data-anchor-id="which-title-is-the-longest-and-how-mnany-words-are-there-in-it">Which title is the longest and how mnany words are there in it?</h4>
 <div class="cell">
-<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>new_data2 <span class="ot">&lt;-</span> filter1 <span class="sc">|&gt;</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">line =</span> <span class="fu">row_number</span>()) <span class="sc">|&gt;</span> <span class="co">#assigns index or number to each by starting from 1. </span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">unnest_tokens</span>(word, new_keyword, <span class="at">token =</span> <span class="st">"words"</span>)</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(new_data2)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 10,595 × 6
-   title                                  abstract keywords newtitle  line word 
-   &lt;chr&gt;                                  &lt;chr&gt;    &lt;chr&gt;    &lt;chr&gt;    &lt;int&gt; &lt;chr&gt;
- 1 Desired Sterilization Procedure at th… To eval… Adult; … Desired…     1 adult
- 2 Desired Sterilization Procedure at th… To eval… Adult; … Desired…     1 cesa…
- 3 Desired Sterilization Procedure at th… To eval… Adult; … Desired…     1 sect…
- 4 Desired Sterilization Procedure at th… To eval… Adult; … Desired…     1 coho…
- 5 Desired Sterilization Procedure at th… To eval… Adult; … Desired…     1 stud…
- 6 Desired Sterilization Procedure at th… To eval… Adult; … Desired…     1 fema…
- 7 Desired Sterilization Procedure at th… To eval… Adult; … Desired…     1 heal…
- 8 Desired Sterilization Procedure at th… To eval… Adult; … Desired…     1 disp…
- 9 Desired Sterilization Procedure at th… To eval… Adult; … Desired…     1 huma…
-10 Desired Sterilization Procedure at th… To eval… Adult; … Desired…     1 insu…
-# ℹ 10,585 more rows</code></pre>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Longest Titles</caption>
+<colgroup>
+<col style="width: 95%">
+<col style="width: 4%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">NewTitle</th>
+<th style="text-align: right;">WordCount</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">A single baseline ultrasound assessment of fibroid presence and size is strongly predictive of future uterine procedure year followup of randomly sampled premenopausal women aged years</td>
+<td style="text-align: right;">27</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Impact of racial disparities on potential years of life lost due to gynecologic cancer in the United States Trends from to based on SEER database</td>
+<td style="text-align: right;">27</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Trends of racial disparities in assisted reproductive technology outcomes in black women compared with white women Society for Assisted Reproductive Technology and vs</td>
+<td style="text-align: right;">26</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Disparities in cervical cancer survival in the United States by race and stage at diagnosis An analysis of women diagnosed between and CONCORD</td>
+<td style="text-align: right;">26</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Black race associated with lower live birth rate in frozenthawed blastocyst transfer cycles an analysis of Society for Assisted Reproductive Technology frozenthawed blastocyst transfer cycles</td>
+<td style="text-align: right;">26</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 </section>
-<section id="after-tokenizing-the-newtitle-the-total-rows-i-have-are-more-4-thounsands-so-next-i-want-to-remove-some-of-the-stop_words." class="level4">
-<h4 class="anchored" data-anchor-id="after-tokenizing-the-newtitle-the-total-rows-i-have-are-more-4-thounsands-so-next-i-want-to-remove-some-of-the-stop_words.">After tokenizing the newtitle, the total rows I have are more 4 thounsands, so next I want to remove some of the stop_words.</h4>
+<section id="does-the-longest-title-always-have-the-most-characters" class="level4">
+<h4 class="anchored" data-anchor-id="does-the-longest-title-always-have-the-most-characters">Does the longest title always have the most characters?</h4>
 <div class="cell">
-<div class="cell-output cell-output-stderr">
-<pre><code>Joining with `by = join_by(word)`</code></pre>
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Longest Titles (by Character Count)</caption>
+<colgroup>
+<col style="width: 95%">
+<col style="width: 4%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">NewTitle</th>
+<th style="text-align: right;">CharCount</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Black race associated with lower live birth rate in frozenthawed blastocyst transfer cycles an analysis of Society for Assisted Reproductive Technology frozenthawed blastocyst transfer cycles</td>
+<td style="text-align: right;">167</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Systematic Next Generation Sequencing is feasible in clinical practice and identifies opportunities for targeted therapy in women with uterine cancer Results from a prospective cohort study</td>
+<td style="text-align: right;">164</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">A single baseline ultrasound assessment of fibroid presence and size is strongly predictive of future uterine procedure year followup of randomly sampled premenopausal women aged years</td>
+<td style="text-align: right;">159</td>
+</tr>
+</tbody>
+</table>
 </div>
+</div>
+<p>No, the longest title doees not always have the most characters.</p>
+</section>
+</section>
+<section id="tokenization" class="level3">
+<h3 class="anchored" data-anchor-id="tokenization">Tokenization</h3>
+<section id="tokenizing-the-title-variable." class="level4">
+<h4 class="anchored" data-anchor-id="tokenizing-the-title-variable.">Tokenizing the Title Variable.</h4>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption><strong style="font-size:18px; color:black;">10 Tokenized Words (Title)</strong></caption>
+<thead>
+<tr class="header">
+<th style="text-align: right;">Line</th>
+<th style="text-align: left;">Words</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">desired</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">sterilization</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">procedure</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">at</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">the</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">time</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">of</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">cesarean</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">delivery</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">according</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="tokenizing-the-keywords-variable" class="level4">
+<h4 class="anchored" data-anchor-id="tokenizing-the-keywords-variable">Tokenizing the Keywords Variable</h4>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption><strong style="font-size:18px; color:black;">10 Tokenized Words (Keywords)</strong></caption>
+<thead>
+<tr class="header">
+<th style="text-align: right;">Line</th>
+<th style="text-align: left;">Words</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">adult</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">cesarean</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">section</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">cohort</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">studies</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">female</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">healthcare</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">disparities</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">humans</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">insurance</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+</section>
+<section id="stopwords-exploration" class="level3">
+<h3 class="anchored" data-anchor-id="stopwords-exploration">Stopwords Exploration</h3>
+<section id="snowball" class="level4">
+<h4 class="anchored" data-anchor-id="snowball">Snowball</h4>
+<div class="cell">
+<div class="cell-output-display">
+<div class="datatables html-widget html-fill-item" id="htmlwidget-09f1d0cdc14d5a7fb3b6" style="width:100%;height:auto;"></div>
+<script type="application/json" data-for="htmlwidget-09f1d0cdc14d5a7fb3b6">{"x":{"filter":"none","vertical":false,"caption":"<caption>Snowball Stopwords<\/caption>","data":[["1","2","3","4","5","6","7","8","9","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31","32","33","34","35","36","37","38","39","40","41","42","43","44","45","46","47","48","49","50","51","52","53","54","55","56","57","58","59","60","61","62","63","64","65","66","67","68","69","70","71","72","73","74","75","76","77","78","79","80","81","82","83","84","85","86","87","88","89","90","91","92","93","94","95","96","97","98","99","100","101","102","103","104","105","106","107","108","109","110","111","112","113","114","115","116","117","118","119","120","121","122","123","124","125","126","127","128","129","130","131","132","133","134","135","136","137","138","139","140","141","142","143","144","145","146","147","148","149","150","151","152","153","154","155","156","157","158","159","160","161","162","163","164","165","166","167","168","169","170","171","172","173","174","175"],["i","me","my","myself","we","our","ours","ourselves","you","your","yours","yourself","yourselves","he","him","his","himself","she","her","hers","herself","it","its","itself","they","them","their","theirs","themselves","what","which","who","whom","this","that","these","those","am","is","are","was","were","be","been","being","have","has","had","having","do","does","did","doing","would","should","could","ought","i'm","you're","he's","she's","it's","we're","they're","i've","you've","we've","they've","i'd","you'd","he'd","she'd","we'd","they'd","i'll","you'll","he'll","she'll","we'll","they'll","isn't","aren't","wasn't","weren't","hasn't","haven't","hadn't","doesn't","don't","didn't","won't","wouldn't","shan't","shouldn't","can't","cannot","couldn't","mustn't","let's","that's","who's","what's","here's","there's","when's","where's","why's","how's","a","an","the","and","but","if","or","because","as","until","while","of","at","by","for","with","about","against","between","into","through","during","before","after","above","below","to","from","up","down","in","out","on","off","over","under","again","further","then","once","here","there","when","where","why","how","all","any","both","each","few","more","most","other","some","such","no","nor","not","only","own","same","so","than","too","very","will"],["snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball","snowball"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>word<\/th>\n      <th>lexicon<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"pageLength":5,"autoWidth":true,"columnDefs":[{"orderable":false,"targets":0},{"name":" ","targets":0},{"name":"word","targets":1},{"name":"lexicon","targets":2}],"order":[],"orderClasses":false,"lengthMenu":[5,10,25,50,100]}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+</section>
+<section id="lets-remove-the-stopwords-above-from-the-word-variable-title-and-create-a-table." class="level4">
+<h4 class="anchored" data-anchor-id="lets-remove-the-stopwords-above-from-the-word-variable-title-and-create-a-table.">Let’s remove the stopwords above from the Word variable (title) and create a table.</h4>
+<div class="cell">
+<div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">#REMOVE STOPWORDS &amp; COUNT WORD FREQUENCY</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>new_data3 <span class="ot">&lt;-</span> new_data1 <span class="sc">|&gt;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">anti_join</span>(smart_stopwords) <span class="sc">|&gt;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(word, <span class="at">sort =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(word <span class="sc">!=</span> <span class="st">"NA"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_max</span>(n, <span class="at">n =</span> <span class="dv">30</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption><strong style="font-size:18px; color:black;">10 Most Common Words In Title After Removing Stopwords</strong></caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Words</th>
+<th style="text-align: right;">Count</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">cancer</td>
+<td style="text-align: right;">127</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">disparities</td>
+<td style="text-align: right;">124</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">racial</td>
+<td style="text-align: right;">102</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">women</td>
+<td style="text-align: right;">76</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">endometrial</td>
+<td style="text-align: right;">48</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">care</td>
+<td style="text-align: right;">42</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">outcomes</td>
+<td style="text-align: right;">39</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">treatment</td>
+<td style="text-align: right;">38</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">ethnic</td>
+<td style="text-align: right;">37</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">ovarian</td>
+<td style="text-align: right;">36</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+</section>
+<section id="word-frequency-bar-chart" class="level3">
+<h3 class="anchored" data-anchor-id="word-frequency-bar-chart">Word Frequency Bar Chart</h3>
+<div class="cell">
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="text-analysis_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="text-analysis_files/figure-html/unnamed-chunk-15-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
-<p><em>This is a horizontal bar chart showing the frequency of each word, where the longest bar represent the most common word, and the shortest bar represents most least common word. On the y-axis is words, containing 32 words, while on the x-axis the frequency of each word, ranging from 1 time to approximately 130 times. Overall, the distribution of this bar chart shows a significant emphasis on oncology and healthcare disparities.</em></p>
-</section>
-<section id="next-lets-explore-different-sentiment-lexicons" class="level4">
-<h4 class="anchored" data-anchor-id="next-lets-explore-different-sentiment-lexicons">Next let’s explore different sentiment lexicons</h4>
-</section>
-<section id="implement-sentiment-analysis-with-the-bing-and-titles" class="level4">
-<h4 class="anchored" data-anchor-id="implement-sentiment-analysis-with-the-bing-and-titles">Implement sentiment analysis with the BING and titles</h4>
+<p>This horizontal bar chart displays the frequency of the most common words in the dataset, where longer bars indicate higher word frequency. Words such as “cancer,” “disparities,” and “racial” appear most frequently, suggesting a strong focus on healthcare, particularly in oncology and health disparities. Because the chart is flipped, the word labels are shown on the y-axis, while the frequency values are displayed along the x-axis. This layout makes it easier to read longer words and compare their frequencies visually. Overall, the distribution highlights a clear thematic emphasis on cancer research, patient outcomes, and demographic disparities, providing insight into the primary topics present in the literature.</p>
+<section id="lets-explore-the-bing-sentiment-lexicons" class="level4">
+<h4 class="anchored" data-anchor-id="lets-explore-the-bing-sentiment-lexicons">Let’s Explore The Bing Sentiment Lexicons</h4>
 <div class="cell">
-<div class="cell-output cell-output-stderr">
-<pre><code>Joining with `by = join_by(word)`</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 3 × 3
-  word         n sentiment
-  &lt;chr&gt;    &lt;int&gt; &lt;chr&gt;    
-1 cancer     127 negative 
-2 survival    36 positive 
-3 risk        27 negative </code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Joining with `by = join_by(word)`</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 2 × 2
-  sentiment avg_n
-  &lt;chr&gt;     &lt;dbl&gt;
-1 negative     77
-2 positive     36</code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Joining with `by = join_by(word)`</code></pre>
-</div>
 <div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="text-analysis_files/figure-html/unnamed-chunk-10-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
+<table class="caption-top table table-sm table-striped small">
+<caption><strong style="font-size:18px; color:black;">10 Example Words with Sentiments</strong></caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Words</th>
+<th style="text-align: left;">Sentiment</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">2-faces</td>
+<td style="text-align: left;">negative</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">abnormal</td>
+<td style="text-align: left;">negative</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">abolish</td>
+<td style="text-align: left;">negative</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">abominable</td>
+<td style="text-align: left;">negative</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">abominably</td>
+<td style="text-align: left;">negative</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">abominate</td>
+<td style="text-align: left;">negative</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">abomination</td>
+<td style="text-align: left;">negative</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">abort</td>
+<td style="text-align: left;">negative</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">aborted</td>
+<td style="text-align: left;">negative</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">aborts</td>
+<td style="text-align: left;">negative</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
-</div>
-<p><em>This faceted horizontal bar chart illustrates word frequencies categorized by sentiment in academic literature. Words associated with negative sentiment, including, cancer, risk, severe, appear in the left panel, while words associated with positive sentiment, survival, appear in the right panel. Bar lengths indicate relative word frequencies. The word that contributes the most to the sentiment scores for these titles is survival. All three terms—risk, cancer, and survival—show a maximum relative frequency of</em> <span class="math inline">\(1.00\)</span> within their respective sentiment categories.</p>
 </section>
-<section id="second-lets-check-word-frequency-using-wordcloud." class="level4">
-<h4 class="anchored" data-anchor-id="second-lets-check-word-frequency-using-wordcloud.">Second, let’s check word frequency using wordcloud.</h4>
+</section>
+<section id="implement-sentiment-analysis-with-the-bing" class="level3">
+<h3 class="anchored" data-anchor-id="implement-sentiment-analysis-with-the-bing">Implement Sentiment Analysis with the BING</h3>
+<section id="are-titles-more-positve-negative-or-neutral" class="level4">
+<h4 class="anchored" data-anchor-id="are-titles-more-positve-negative-or-neutral">Are titles more positve, negative, or neutral?</h4>
+</section>
+<section id="data-table" class="level4">
+<h4 class="anchored" data-anchor-id="data-table">Data Table</h4>
 <div class="cell">
-<div class="cell-output cell-output-stderr">
-<pre><code>Joining with `by = join_by(word)`</code></pre>
-</div>
 <div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="text-analysis_files/figure-html/wordcloud-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-</div>
-<p><em>This word cloud visualizes the most frequently occurring terms in the literature dataset. The size of each word represents its frequency, making the most dominant themes immediately apparent. The largest words—including analysis, birth, black, cancer, and, risk, indicate that these are the most prominent terms in the text. Words are arranged in both horizontal and vertical orientations to create a compact thematic summary.</em></p>
-</section>
-<section id="lets-do-some-n-gram-analysis" class="level4">
-<h4 class="anchored" data-anchor-id="lets-do-some-n-gram-analysis">Let’s do some N-gram analysis</h4>
-<div class="cell">
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 95,251 × 4
-   title                                              keywords linenumber bigram
-   &lt;chr&gt;                                              &lt;chr&gt;         &lt;int&gt; &lt;chr&gt; 
- 1 Desired Sterilization Procedure at the Time of Ce… Adult; …          1 to ev…
- 2 Desired Sterilization Procedure at the Time of Ce… Adult; …          1 evalu…
- 3 Desired Sterilization Procedure at the Time of Ce… Adult; …          1 wheth…
- 4 Desired Sterilization Procedure at the Time of Ce… Adult; …          1 women…
- 5 Desired Sterilization Procedure at the Time of Ce… Adult; …          1 with …
- 6 Desired Sterilization Procedure at the Time of Ce… Adult; …          1 medic…
- 7 Desired Sterilization Procedure at the Time of Ce… Adult; …          1 are l…
- 8 Desired Sterilization Procedure at the Time of Ce… Adult; …          1 less …
- 9 Desired Sterilization Procedure at the Time of Ce… Adult; …          1 likel…
-10 Desired Sterilization Procedure at the Time of Ce… Adult; …          1 than …
-# ℹ 95,241 more rows</code></pre>
-</div>
-</div>
-</section>
-<section id="check-the-most-common-bigram" class="level4">
-<h4 class="anchored" data-anchor-id="check-the-most-common-bigram">Check the most common bigram</h4>
-<div class="cell">
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 43,462 × 2
-   bigram                  n
-   &lt;chr&gt;               &lt;int&gt;
- 1 95 ci                 502
- 2 in the                384
- 3 non hispanic          330
- 4 white women           289
- 5 black women           277
- 6 compared with         273
- 7 associated with       272
- 8 p lt                  267
- 9 confidence interval   262
-10 95 confidence         255
-# ℹ 43,452 more rows</code></pre>
-</div>
-</div>
-<p>The bigram “95 ci” occurs in a total of 502 titles.</p>
-</section>
-<section id="lets-remove-some-of-the-stop-words-from-the-bigram-column" class="level4">
-<h4 class="anchored" data-anchor-id="lets-remove-some-of-the-stop-words-from-the-bigram-column">LET’S REMOVE SOME OF THE STOP WORDS FROM THE BIGRAM COLUMN</h4>
-<div class="cell">
-<div class="cell-output cell-output-stdout">
-<pre><code># A tibble: 35,241 × 5
-   title                                keywords linenumber firstword secondword
-   &lt;chr&gt;                                &lt;chr&gt;         &lt;int&gt; &lt;chr&gt;     &lt;chr&gt;     
- 1 Desired Sterilization Procedure at … Adult; …          1 privately insured   
- 2 Desired Sterilization Procedure at … Adult; …          1 insured   counterpa…
- 3 Desired Sterilization Procedure at … Adult; …          1 desired   steriliza…
- 4 Desired Sterilization Procedure at … Adult; …          1 steriliz… procedure 
- 5 Desired Sterilization Procedure at … Adult; …          1 cesarean  delivery  
- 6 Desired Sterilization Procedure at … Adult; …          1 secondary analysis  
- 7 Desired Sterilization Procedure at … Adult; …          1 single    center    
- 8 Desired Sterilization Procedure at … Adult; …          1 center    retrospec…
- 9 Desired Sterilization Procedure at … Adult; …          1 retrospe… cohort    
-10 Desired Sterilization Procedure at … Adult; …          1 cohort    examining 
-# ℹ 35,231 more rows</code></pre>
+<table class="caption-top table table-sm table-striped small">
+<caption>Top Words with Sentiment Labels</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">word</th>
+<th style="text-align: right;">n</th>
+<th style="text-align: left;">sentiment</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">cancer</td>
+<td style="text-align: right;">127</td>
+<td style="text-align: left;">negative</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">survival</td>
+<td style="text-align: right;">36</td>
+<td style="text-align: left;">positive</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">risk</td>
+<td style="text-align: right;">27</td>
+<td style="text-align: left;">negative</td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
 </section>
-<section id="creating-a-network-graph-from-the-n-gram" class="level4">
-<h4 class="anchored" data-anchor-id="creating-a-network-graph-from-the-n-gram">CREATING A NETWORK GRAPH FROM THE N-GRAM</h4>
+<section id="first-lets-visualize-with-bar-chart" class="level4">
+<h4 class="anchored" data-anchor-id="first-lets-visualize-with-bar-chart">First: Let’s visualize with bar chart</h4>
 <div class="cell">
 <div class="cell-output-display">
 <div>
 <figure class="figure">
-<p><img src="text-analysis_files/figure-html/unnamed-chunk-14-1.png" class="img-fluid figure-img" width="672"></p>
+<p><img src="text-analysis_files/figure-html/unnamed-chunk-20-1.png" class="img-fluid figure-img" width="672"></p>
 </figure>
 </div>
 </div>
 </div>
-<p><em>This is a directed network graph illustrating common word pairs (bigrams) within the dataset. Each green node represents a unique word, while the arrows indicate the sequence and directional relationship of phrases appearing together in the text. The density of the arrows reveals thematic clusters, most notably a central focus on racial and ethnic disparities and a secondary cluster focused on maternal health and obstetric outcomes. Larger connections represent more frequent word pairings.</em></p>
+<p>This faceted horizontal bar chart illustrates word frequencies categorized by sentiment in academic literature. Words associated with negative sentiment, including, cancer, risk, severe, appear in the left panel, while words associated with positive sentiment, survival, appear in the right panel. Bar lengths indicate relative word frequencies. The word that contributes the most to the sentiment scores for these titles is survival. All three terms—risk, cancer, and survival—show a maximum relative frequency of <span class="math inline">\(1.00\)</span> within their respective sentiment categories.</p>
+</section>
+<section id="second-lets-visualize-using-wordcloud." class="level4">
+<h4 class="anchored" data-anchor-id="second-lets-visualize-using-wordcloud.">Second: Let’s Visualize Using Wordcloud.</h4>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="text-analysis_files/figure-html/unnamed-chunk-21-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>This word cloud visualizes the most frequently occurring terms in the literature dataset. The size of each word represents its frequency, making the most dominant themes immediately apparent. The largest words—including analysis, birth, black, cancer, and, risk, indicate that these are the most prominent terms in the text. Words are arranged in both horizontal and vertical orientations to create a compact thematic summary.</p>
+</section>
+</section>
+<section id="n-gram-analysis-with-abstracts" class="level3">
+<h3 class="anchored" data-anchor-id="n-gram-analysis-with-abstracts">N-gram Analysis with Abstracts</h3>
+<section id="first-i-will-begin-by-breaking-the-abstracts-into-bigrams-and-the-table-belo-is-just-showing-only-10-example-bigrams." class="level4">
+<h4 class="anchored" data-anchor-id="first-i-will-begin-by-breaking-the-abstracts-into-bigrams-and-the-table-belo-is-just-showing-only-10-example-bigrams.">First: I will begin by breaking the abstracts into bigrams, and the table belo is just showing only 10 example bigrams.</h4>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption><strong style="font-size:18px; color:black;">10 Example Bigram Words</strong></caption>
+<thead>
+<tr class="header">
+<th style="text-align: right;">Linenumber</th>
+<th style="text-align: left;">Bigram</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">to evaluate</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">evaluate whether</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">whether women</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">women with</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">with medicaid</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">medicaid are</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">are less</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">less likely</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">likely than</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">than their</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="second-check-the-most-common-bigram" class="level4">
+<h4 class="anchored" data-anchor-id="second-check-the-most-common-bigram">Second: Check the most common bigram</h4>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption><strong style="font-size:18px; color:black;">10 Most Common Bigram Words</strong></caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Bigram</th>
+<th style="text-align: right;">Count</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">95 ci</td>
+<td style="text-align: right;">502</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">in the</td>
+<td style="text-align: right;">384</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">non hispanic</td>
+<td style="text-align: right;">330</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">white women</td>
+<td style="text-align: right;">289</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">black women</td>
+<td style="text-align: right;">277</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">compared with</td>
+<td style="text-align: right;">273</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">associated with</td>
+<td style="text-align: right;">272</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">p lt</td>
+<td style="text-align: right;">267</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">confidence interval</td>
+<td style="text-align: right;">262</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">95 confidence</td>
+<td style="text-align: right;">255</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<p>The most common bigram is “95 ci”, which occurs in a total of 502 times.</p>
+</section>
+<section id="third-remove-some-of-the-stopwrods-from-the-bigram-column" class="level4">
+<h4 class="anchored" data-anchor-id="third-remove-some-of-the-stopwrods-from-the-bigram-column">Third: Remove Some of the Stopwrods From the Bigram Column</h4>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption><strong style="font-size:18px; color:black;">10 Example Bigram Words Without Stopwords</strong></caption>
+<thead>
+<tr class="header">
+<th style="text-align: right;">Linenumber</th>
+<th style="text-align: left;">Bigram</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">single baseline</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">baseline ultrasound</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">ultrasound assessment</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">fibroid burden</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">burden presence</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">predict future</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">future probability</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">major uterine</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">uterine procedure</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1</td>
+<td style="text-align: left;">major uterine</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="fourth-creating-a-network-graph-from-the-bigram" class="level4">
+<h4 class="anchored" data-anchor-id="fourth-creating-a-network-graph-from-the-bigram">Fourth: Creating a Network Graph From the Bigram</h4>
+<div class="cell">
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="text-analysis_files/figure-html/unnamed-chunk-26-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>This is a directed network graph illustrating common word pairs (bigrams) within the dataset. Each green node represents a unique word, while the arrows indicate the sequence and directional relationship of phrases appearing together in the text. The density of the arrows reveals thematic clusters, most notably a central focus on racial and ethnic disparities and a secondary cluster focused on maternal health and obstetric outcomes. Larger connections represent more frequent word pairings.</p>
+</section>
+</section>
+<section id="reference" class="level3">
+<h3 class="anchored" data-anchor-id="reference">Reference</h3>
+<ul>
+<li>Academic Literature on Racial and Ethnic Disparities in Reproductive Medicine in the US. <a href="https://github.com/rfordatascience/tidytuesday/blob/main/data/2025/2025-02-25/readme.md">see the source here</a></li>
+<li>Stopwords: <a href="https://juliasilge.github.io/tidytext/reference/get_stopwords.html">online source</a></li>
+<li>get_sentiments(“bing”) R Package</li>
+<li>Sentiment: <a href="https://www.cs.uic.edu/~liub/FBS/sentiment-analysis.html">online source</a></li>
+</ul>
 
 
 </section>

@@ -1,1 +1,21 @@
-/* css styles */
+body {
+  font-family: "Merriweather";
+  font-size: 20px;   /* increase or decrease this */
+}
+
+h1.title {
+  text-align: center;
+}
+
+h3 {
+  margin-top: 20px;
+  margin-bottom: 5px;
+}
+
+.navbar {
+  background-color: #1b5e20 !important;  /* dark green */
+}
+
+a {
+  color: #f4a261;  /* orange */
+}

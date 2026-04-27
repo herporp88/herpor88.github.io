@@ -7,7 +7,26 @@ about:
   image-shape: round
   image-width: 17em
 ---
+### Full Name  
+Herpor Poryaeproua 
 
-I am a Biology and Data Science student at St. Olaf College.
+### Education
+UWC Mahindra College, India, 2023  
+St. Olaf College, United States, 2027  
 
-This site will showcase my projects and work.
+### Majors and Concentrations
+Biology (Major)  
+Statistics and Data Science  
+Environmental Studies  
+
+### Skills  
+Data and Statistical: Data analysis, text mining, web scraping, application programming interface (API)  
+Software: Intermediate proficiency in R; basic proficiency in Python  
+Languages: Hmong, Lao, and English (fluency written/spoken); Thai (basic written and conversational spoken)  
+
+
+### Contact Information 
+Phone: 507-321-0354  
+Email: poryae1@stolaf.edu  
+Linkedin: herpor  
+Handshake: herpor  
