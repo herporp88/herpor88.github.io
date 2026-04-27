@@ -1,12 +1,16 @@
 ---
 title: "Herpor's Website"
-image: media/herpor.jpg
 toc: false
-about:
-  template: jolla
-  image-shape: round
-  image-width: 17em
 ---
+
+::: {.columns}
+
+::: {.column width="40%"}
+![Profile](media/photo2.jpg){style="width:350px; border-radius:48%;"}
+:::
+
+::: {.column width="60%"}
+
 ### Full Name  
 Herpor Poryaeproua 
 
@@ -30,3 +34,8 @@ Phone: 507-321-0354
 Email: poryae1@stolaf.edu  
 Linkedin: herpor  
 Handshake: herpor  
+
+:::
+
+:::
+
